@@ -1,0 +1,39 @@
+# Virtual Environment
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# SQLite
+db.sqlite3
+
+# Environment Variables
+.env
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Logs
+*.log
+
+# Media
+media/*
+!media/.gitkeep
+
+# Static Collected
+staticfiles/
+
+# Pytest
+.pytest_cache/
+
+# Migrations (keep __init__.py)
+**/migrations/*
+!**/migrations/__init__.py
