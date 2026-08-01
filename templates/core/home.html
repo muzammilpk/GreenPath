@@ -1,17 +1,12 @@
-{% extends 'base.html' %}#automatically get to child files
-
-{% block title %}
-Home | GreenPath
-{% endblock %}
+{% extends 'base.html' %}
 
 {% block content %}
 
-<h1 class="text-center mt-5">
-    🌿 Welcome to GreenPath
-</h1>
-
-<p class="text-center">
-    Your Sustainable Travel Planner
-</p>
+{% include 'components/hero.html' %}
+{% include 'components/features.html' %}
+{% include 'components/stats.html' %}
+{% include 'components/how_it_works.html' %}
+{% include 'components/cta.html' %}
+{% include 'components/footer.html' %}
 
 {% endblock %}

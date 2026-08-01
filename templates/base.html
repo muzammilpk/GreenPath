@@ -29,74 +29,7 @@ href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.m
 
 <body>
 
-<nav class="navbar navbar-expand-lg bg-white shadow-sm">
-
-<div class="container">
-
-<a class="navbar-brand fw-bold fs-3 text-success" href="/">
-
-<i class="bi bi-tree-fill"></i>
-
-GreenPath
-
-</a>
-
-<button class="navbar-toggler"
-type="button"
-data-bs-toggle="collapse"
-data-bs-target="#navbar">
-
-<span class="navbar-toggler-icon"></span>
-
-</button>
-
-<div class="collapse navbar-collapse" id="navbar">
-
-<ul class="navbar-nav mx-auto">
-
-<li class="nav-item">
-<a class="nav-link" href="/">Home</a>
-</li>
-
-<li class="nav-item">
-<a class="nav-link" href="#">Plan Trip</a>
-</li>
-
-<li class="nav-item">
-<a class="nav-link" href="#">Dashboard</a>
-</li>
-
-<li class="nav-item">
-<a class="nav-link" href="#">Reports</a>
-</li>
-
-<li class="nav-item">
-<a class="nav-link" href="#">About</a>
-</li>
-
-</ul>
-
-<div>
-
-<a href="#" class="btn btn-outline-success me-2">
-
-Login
-
-</a>
-
-<a href="#" class="btn btn-green">
-
-Register
-
-</a>
-
-</div>
-
-</div>
-
-</div>
-
-</nav>
+{% include 'components/navbar.html' %}
 
 {% block content %}
 {% endblock %}
