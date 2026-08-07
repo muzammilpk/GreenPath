@@ -1,61 +1,40 @@
-<section class="hero">
+<div class="container">
 
-    <div class="container">
+    <div class="row align-items-center">
 
-        <div class="row align-items-center">
+        <!-- Left Side -->
+        <div class="col-lg-6">
 
-            <!-- Left Side -->
-            <div class="col-lg-6">
+            <span class="hero-badge">
+                🌿 Sustainable Navigation
+            </span>
 
-                <span class="hero-badge">
-                    🌿 Sustainable Navigation
-                </span>
+            <h1 class="hero-title mt-3">
+                Travel Green.<br>
+                Travel Smart.
+            </h1>
 
-                <h1 class="hero-title mt-3">
-                    Travel Green.<br>
-                    Travel Smart.
-                </h1>
+            <p class="hero-text">
+                Discover the fastest and most eco-friendly route.
+                Compare carbon emissions, save the environment,
+                and make every journey count.
+            </p>
 
-                <p class="hero-text">
-                    Discover the fastest and most eco-friendly route.
-                    Compare carbon emissions, save the environment,
-                    and make every journey count.
-                </p>
+            <div class="planner-card">
 
-                <div class="search-card">
-
-                    <input
-                        type="text"
-                        class="form-control mb-3"
-                        placeholder="📍 Enter Source">
-
-                    <input
-                        type="text"
-                        class="form-control mb-4"
-                        placeholder="📍 Enter Destination">
-
-                    <button class="btn btn-green w-100">
-                        🌱 Plan Eco Route
-                    </button>
-
-                </div>
-
-            </div>
-
-            <!-- Right Side -->
-            <div class="col-lg-6 text-center">
-
-               {% load static %}
-
-<img
-    src="{% static 'images/hero/travel.svg' %}"
-    class="img-fluid hero-image"
-    alt="Travel">
+                {% include "components/planner_form.html" %}
 
             </div>
 
         </div>
 
+        <!-- Right Side -->
+        <div class="col-lg-6">
+
+            <div id="map"></div>
+
+        </div>
+
     </div>
 
-</section>
+</div>

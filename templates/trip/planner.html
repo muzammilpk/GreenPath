@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Plan Trip{% endblock %}
+
+{% block content %}
+
+<section class="trip-section py-5">
+
+    <div class="container">
+
+        <div class="row align-items-stretch g-4">
+
+    <!-- Planner -->
+   <div class="col-lg-5 d-flex">
+
+    <div class="planner-card w-100">
+
+        {% include "components/planner_form.html" %}
+
+    </div>
+
+</div>
+
+    <!-- Map -->
+    <div class="col-lg-7">
+
+        <div id="map"></div>
+
+    </div>
+
+</div>
+
+    </div>
+
+</section>
+
+{% endblock %}

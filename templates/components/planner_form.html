@@ -1,0 +1,113 @@
+<div class="card shadow-lg border-0 rounded-4 p-4 h-100 w-100">
+
+    <h2 class="text-center fw-bold mb-4">
+        Plan Your Journey
+    </h2>
+
+    <form id="tripForm">
+
+        <!-- Source -->
+        <div class="mb-4">
+
+            <label for="source" class="form-label fw-semibold">
+                📍 Source
+            </label>
+
+            <input
+                id="source"
+                type="text"
+                class="form-control form-control-lg"
+                placeholder="Enter source location"
+                required>
+
+        </div>
+
+        <!-- Destination -->
+        <div class="mb-4">
+
+            <label for="destination" class="form-label fw-semibold">
+                🎯 Destination
+            </label>
+
+            <input
+                id="destination"
+                type="text"
+                class="form-control form-control-lg"
+                placeholder="Enter destination"
+                required>
+
+        </div>
+
+        <h5 class="fw-bold mb-3">
+            Choose Transportation
+        </h5>
+
+        <div class="row">
+
+            <div class="col-md-6">
+
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="radio" name="vehicle" value="walk">
+                    <label class="form-check-label">🚶 Walking</label>
+                </div>
+
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="radio" name="vehicle" value="cycle">
+                    <label class="form-check-label">🚴 Bicycle</label>
+                </div>
+
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="radio" name="vehicle" value="bike">
+                    <label class="form-check-label">🏍 Bike</label>
+                </div>
+
+            </div>
+
+            <div class="col-md-6">
+
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="radio" name="vehicle" value="bus">
+                    <label class="form-check-label">🚌 Bus</label>
+                </div>
+
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="radio" name="vehicle" value="train">
+                    <label class="form-check-label">🚆 Train</label>
+                </div>
+
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="radio" name="vehicle" value="car">
+                    <label class="form-check-label">🚗 Car</label>
+                </div>
+
+            </div>
+
+        </div>
+
+        <hr>
+
+        <div class="form-check mb-4">
+
+            <input
+                class="form-check-input"
+                type="radio"
+                name="vehicle"
+                value="all"
+                checked>
+
+            <label class="form-check-label fw-semibold text-success">
+                🌍 Compare All Vehicles (Recommended)
+            </label>
+
+        </div>
+
+<button
+    id="searchRoute"
+    type="button"
+    class="btn btn-success btn-lg w-100">
+    🌱 Compare Routes
+</button>
+
+    </form>
+
+</div>
