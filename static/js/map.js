@@ -1,17 +1,20 @@
-// Create the map
-const greenMap = L.map("map").setView([10.8505, 76.2711], 7);
+document.addEventListener("DOMContentLoaded", () => {
 
-// Add OpenStreetMap tiles
-L.tileLayer(
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    {
-        attribution: "&copy; OpenStreetMap contributors",
-    }
-).addTo(greenMap);
+    const mapContainer = document.getElementById("map");
 
-// Make the map accessible from other JS files
-window.greenMap = greenMap;
+    if (!mapContainer) return;
 
-// Store markers globally
-window.sourceMarker = null;
-window.destinationMarker = null;
+    window.greenMap = L.map("map").setView([10.8505, 76.2711], 7);
+
+    L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+            attribution: "&copy; OpenStreetMap contributors",
+        }
+    ).addTo(window.greenMap);
+
+    // Store markers globally
+    window.sourceMarker = null;
+    window.destinationMarker = null;
+    window.routeControl = null;
+});
