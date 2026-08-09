@@ -9,27 +9,85 @@
 
     <div class="container">
 
+        <!-- Planner + Map -->
         <div class="row align-items-stretch g-4">
 
-    <!-- Planner -->
-   <div class="col-lg-5 d-flex">
+            <!-- Planner -->
+            <div class="col-lg-5">
 
-    <div class="planner-card w-100">
+                <div class="planner-card h-100">
 
-        {% include "components/planner_form.html" %}
+                    {% include "components/planner_form.html" %}
 
-    </div>
+                </div>
 
-</div>
+            </div>
 
-    <!-- Map -->
-    <div class="col-lg-7">
+            <!-- Map -->
+            <div class="col-lg-7">
 
-        <div id="map"></div>
+                <div id="map"></div>
 
-    </div>
+            </div>
 
-</div>
+        </div>
+
+
+        <!-- Route Summary -->
+        <div class="row mt-4">
+
+            <div class="col-12">
+
+                <div id="routeSummary"
+                     class="card shadow-sm border-0 rounded-4 d-none">
+
+                    <div class="card-body p-4">
+
+                        <h4 class="fw-bold mb-4">
+                            📍 Route Summary
+                        </h4>
+
+                        <div class="row text-center">
+
+                            <div class="col-md-6">
+
+                                <h6 class="text-muted">
+                                    Distance
+                                </h6>
+
+                                <h3 id="distanceValue"
+                                    class="fw-bold text-success">
+                                    0 km
+                                </h3>
+
+                            </div>
+
+                            <div class="col-md-6">
+
+                                <h6 class="text-muted">
+                                    Estimated Time
+                                </h6>
+
+                                <h3 id="timeValue"
+                                    class="fw-bold text-primary">
+                                    0 min
+                                </h3>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Vehicle Comparison -->
+        {% include "components/vehicle_comparison.html" %}
 
     </div>
 
