@@ -16,51 +16,134 @@ document.addEventListener("DOMContentLoaded", () => {
 
     button.addEventListener("click", async () => {
 
-        const sourceElement = document.getElementById("source");
-        const destinationElement = document.getElementById("destination");
+        const sourceElement =
+            document.getElementById("source");
 
-        const source = sourceElement.value.trim();
-        const destination = destinationElement.value.trim();
+        const destinationElement =
+            document.getElementById("destination");
+
+        const source =
+            sourceElement.value.trim();
+
+        const destination =
+            destinationElement.value.trim();
+
 
         // Get selected vehicle
         const selectedVehicle =
-            document.querySelector('input[name="vehicle"]:checked');
+            document.querySelector(
+                'input[name="vehicle"]:checked'
+            );
 
+
+        // Validate locations
         if (!source || !destination) {
-            alert("Please enter both source and destination.");
+
+            alert(
+                "Please enter both source and destination."
+            );
+
             return;
         }
 
+
+        // Validate vehicle
         if (!selectedVehicle) {
-            alert("Please select a transportation option.");
+
+            alert(
+                "Please select a transportation option."
+            );
+
             return;
         }
 
-        console.log("Selected vehicle:", selectedVehicle.value);
 
-        // Show selected vehicle immediately
-        displaySelectedVehicle(selectedVehicle.value);
-
-        // ----------------------------------------------------
-        // GEOCODING
-        // ----------------------------------------------------
-
-        const sourceLocation = await geocode(source);
-        const destinationLocation = await geocode(destination);
-
-        if (!sourceLocation || !destinationLocation) {
-            return;
-        }
-
-        // ----------------------------------------------------
-        // SHOW ROUTE
-        // ----------------------------------------------------
-
-        showRoute(
-            sourceLocation,
-            destinationLocation,
+        console.log(
+            "Selected vehicle:",
             selectedVehicle.value
         );
+
+
+        // Show selected vehicle
+        displaySelectedVehicle(
+            selectedVehicle.value
+        );
+
+
+        // ====================================================
+        // LOADING STATE
+        // ====================================================
+
+        button.disabled = true;
+
+        button.innerHTML =
+            "⏳ Calculating Route...";
+
+
+        try {
+
+            // ====================================================
+            // GEOCODING SOURCE
+            // ====================================================
+
+            const sourceLocation =
+                await geocode(source);
+
+
+            if (!sourceLocation) {
+                return;
+            }
+
+
+            // ====================================================
+            // GEOCODING DESTINATION
+            // ====================================================
+
+            const destinationLocation =
+                await geocode(destination);
+
+
+            if (!destinationLocation) {
+                return;
+            }
+
+
+            // ====================================================
+            // CALCULATE ROUTE
+            // ====================================================
+
+            await showRoute(
+                sourceLocation,
+                destinationLocation,
+                selectedVehicle.value
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "Route calculation error:",
+                error
+            );
+
+
+            alert(
+                "Something went wrong while calculating the route."
+            );
+
+
+        } finally {
+
+            // =================================================
+            // RESTORE BUTTON
+            // =================================================
+
+            button.disabled = false;
+
+            button.innerHTML =
+                "🌱 Compare Routes";
+
+        }
 
     });
 
@@ -78,35 +161,61 @@ async function geocode(place) {
         const url =
             `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(place)}`;
 
-        const response = await fetch(url);
+
+        const response =
+            await fetch(url);
+
 
         if (!response.ok) {
-            throw new Error("Geocoding request failed.");
+
+            throw new Error(
+                "Geocoding request failed."
+            );
+
         }
 
-        const data = await response.json();
+
+        const data =
+            await response.json();
+
 
         if (data.length === 0) {
 
-            alert(`Location not found: ${place}`);
+            alert(
+                `Location not found: ${place}`
+            );
 
             return null;
         }
 
+
         return {
+
             lat: parseFloat(data[0].lat),
+
             lon: parseFloat(data[0].lon),
+
             name: data[0].display_name
+
         };
+
 
     } catch (error) {
 
-        console.error("Geocoding error:", error);
+        console.error(
+            "Geocoding error:",
+            error
+        );
 
-        alert("Unable to find the location. Please try again.");
+
+        alert(
+            "Unable to find the location. Please try again."
+        );
+
 
         return null;
     }
+
 }
 
 
@@ -114,172 +223,266 @@ async function geocode(place) {
 // ROUTE
 // ============================================================
 
-function showRoute(source, destination, selectedVehicle) {
+function showRoute(
+    source,
+    destination,
+    selectedVehicle
+) {
 
-    if (!window.greenMap) {
-
-        console.error("Map is not initialized!");
-
-        alert("Map is not ready.");
-
-        return;
-    }
+    return new Promise((resolve, reject) => {
 
 
-    // Remove previous route
-    if (window.routeControl) {
+        // ====================================================
+        // CHECK MAP
+        // ====================================================
 
-        window.greenMap.removeControl(
-            window.routeControl
-        );
-    }
+        if (!window.greenMap) {
 
-
-    // Create new route
-    window.routeControl = L.Routing.control({
-
-        waypoints: [
-
-            L.latLng(
-                source.lat,
-                source.lon
-            ),
-
-            L.latLng(
-                destination.lat,
-                destination.lon
-            )
-
-        ],
-
-        routeWhileDragging: false,
-
-        addWaypoints: false,
-
-        draggableWaypoints: false,
-
-        fitSelectedRoutes: true,
-
-        show: false
-
-    }).addTo(window.greenMap);
+            console.error(
+                "Map is not initialized!"
+            );
 
 
-    // ========================================================
-    // ROUTE FOUND
-    // ========================================================
-
-    window.routeControl.on(
-        "routesfound",
-        function (e) {
-
-            const route = e.routes[0];
+            alert(
+                "Map is not ready."
+            );
 
 
-            // ------------------------------------------------
-            // DISTANCE
-            // ------------------------------------------------
-
-            const distance =
-                route.summary.totalDistance / 1000;
-
-            const distanceKm =
-                distance.toFixed(2);
+            reject(
+                new Error(
+                    "Map is not initialized."
+                )
+            );
 
 
-            // ------------------------------------------------
-            // ROUTE DURATION
-            // ------------------------------------------------
-
-            const durationMinutes =
-                Math.round(
-                    route.summary.totalTime / 60
-                );
+            return;
+        }
 
 
-            // ------------------------------------------------
-            // UPDATE ROUTE SUMMARY
-            // ------------------------------------------------
+        // ====================================================
+        // REMOVE PREVIOUS ROUTE
+        // ====================================================
 
-            const distanceElement =
-                document.getElementById("distanceValue");
+        if (window.routeControl) {
 
-            const timeElement =
-                document.getElementById("timeValue");
-
-            if (distanceElement) {
-
-                distanceElement.textContent =
-                    distanceKm + " km";
-            }
-
-            if (timeElement) {
-
-                timeElement.textContent =
-                    formatTime(durationMinutes);
-            }
+            window.greenMap.removeControl(
+                window.routeControl
+            );
 
 
-            // Show summary
-            const routeSummary =
-                document.getElementById("routeSummary");
-
-            if (routeSummary) {
-
-                routeSummary.classList.remove("d-none");
-            }
+            window.routeControl = null;
+        }
 
 
-            // ------------------------------------------------
-            // VEHICLE COMPARISON
-            // ------------------------------------------------
+        // ====================================================
+        // CREATE ROUTE
+        // ====================================================
 
-            const vehicleData =
-                calculateVehicleComparison(
+        window.routeControl =
+            L.Routing.control({
+
+                waypoints: [
+
+                    L.latLng(
+                        source.lat,
+                        source.lon
+                    ),
+
+                    L.latLng(
+                        destination.lat,
+                        destination.lon
+                    )
+
+                ],
+
+                routeWhileDragging: false,
+
+                addWaypoints: false,
+
+                draggableWaypoints: false,
+
+                fitSelectedRoutes: true,
+
+                show: false
+
+            }).addTo(
+                window.greenMap
+            );
+
+
+        // ====================================================
+        // ROUTE FOUND
+        // ====================================================
+
+        window.routeControl.on(
+            "routesfound",
+            function (e) {
+
+                const route =
+                    e.routes[0];
+
+
+                // =================================================
+                // DISTANCE
+                // =================================================
+
+                const distance =
+                    route.summary.totalDistance / 1000;
+
+
+                const distanceKm =
+                    distance.toFixed(2);
+
+
+                // =================================================
+                // ROUTE DURATION
+                // =================================================
+
+                const durationMinutes =
+                    Math.round(
+                        route.summary.totalTime / 60
+                    );
+
+
+                // =================================================
+                // UPDATE ROUTE SUMMARY
+                // =================================================
+
+                const distanceElement =
+                    document.getElementById(
+                        "distanceValue"
+                    );
+
+
+                const timeElement =
+                    document.getElementById(
+                        "timeValue"
+                    );
+
+
+                if (distanceElement) {
+
+                    distanceElement.textContent =
+                        distanceKm + " km";
+                }
+
+
+                if (timeElement) {
+
+                    timeElement.textContent =
+                        formatTime(
+                            durationMinutes
+                        );
+                }
+
+
+                // =================================================
+                // SHOW SUMMARY
+                // =================================================
+
+                const routeSummary =
+                    document.getElementById(
+                        "routeSummary"
+                    );
+
+
+                if (routeSummary) {
+
+                    routeSummary.classList.remove(
+                        "d-none"
+                    );
+                }
+
+
+                // =================================================
+                // VEHICLE COMPARISON
+                // =================================================
+
+                const vehicleData =
+                    calculateVehicleComparison(
+                        distance
+                    );
+
+
+                // =================================================
+                // SELECTED VEHICLE DETAILS
+                // =================================================
+
+                displaySelectedVehicleDetails(
+                    selectedVehicle,
                     distance
                 );
 
 
-            // ------------------------------------------------
-            // SELECTED VEHICLE DETAILS
-            // ------------------------------------------------
+                // =================================================
+                // GREENPATH RECOMMENDATION
+                // =================================================
 
-            displaySelectedVehicleDetails(
-                selectedVehicle,
-                distance
-            );
-
-
-            // ------------------------------------------------
-            // RECOMMENDATION
-            // ------------------------------------------------
-
-            updateRecommendation(
-                vehicleData
-            );
+                updateRecommendation(
+                    vehicleData
+                );
 
 
-            // ------------------------------------------------
-            // DEBUG
-            // ------------------------------------------------
+                // =================================================
+                // CONSOLE
+                // =================================================
 
-            console.log(
-                "Distance:",
-                distanceKm + " km"
-            );
+                console.log(
+                    "Distance:",
+                    distanceKm + " km"
+                );
 
-            console.log(
-                "Duration:",
-                durationMinutes + " minutes"
-            );
 
-            console.log(
-                "Vehicle data:",
-                vehicleData
-            );
+                console.log(
+                    "Duration:",
+                    durationMinutes + " minutes"
+                );
 
-        }
-    );
+
+                console.log(
+                    "Vehicle data:",
+                    vehicleData
+                );
+
+
+                console.log(
+                    "Route calculation completed."
+                );
+
+
+                // Tell await showRoute() that
+                // routing has finished.
+                resolve(route);
+
+            }
+        );
+
+
+        // ====================================================
+        // ROUTING ERROR
+        // ====================================================
+
+        window.routeControl.on(
+            "routingerror",
+            function (error) {
+
+                console.error(
+                    "Routing error:",
+                    error
+                );
+
+
+                reject(
+                    new Error(
+                        "Unable to calculate the route."
+                    )
+                );
+
+            }
+        );
+
+    });
+
 }
 
 
@@ -287,15 +490,14 @@ function showRoute(source, destination, selectedVehicle) {
 // VEHICLE COMPARISON
 // ============================================================
 
-function calculateVehicleComparison(distance) {
+function calculateVehicleComparison(
+    distance
+) {
 
-    /*
-        Average speeds in km/h.
 
-        These are currently estimated values.
-        Later we can replace them with real
-        transport-specific routing/API data.
-    */
+    // ========================================================
+    // AVERAGE SPEEDS
+    // ========================================================
 
     const speeds = {
 
@@ -310,13 +512,14 @@ function calculateVehicleComparison(distance) {
         train: 55,
 
         car: 55
+
     };
 
 
-    /*
-        CO₂ emission factors
-        grams per passenger-kilometre
-    */
+    // ========================================================
+    // CO₂ EMISSIONS
+    // grams per passenger-kilometre
+    // ========================================================
 
     const emissions = {
 
@@ -331,12 +534,13 @@ function calculateVehicleComparison(distance) {
         train: 30,
 
         car: 170
+
     };
 
 
-    /*
-        Estimated cost per kilometre
-    */
+    // ========================================================
+    // ESTIMATED COST PER KM
+    // ========================================================
 
     const costs = {
 
@@ -351,155 +555,213 @@ function calculateVehicleComparison(distance) {
         train: 1.5,
 
         car: 10
+
     };
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // VEHICLES
-    // --------------------------------------------------------
+    // ========================================================
 
     const vehicles = {
 
         walk: {
+
             name: "Walking",
+
             icon: "🚶",
+
             speed: speeds.walk,
+
             emission: emissions.walk,
+
             cost: costs.walk
+
         },
+
 
         cycle: {
+
             name: "Bicycle",
+
             icon: "🚴",
+
             speed: speeds.cycle,
+
             emission: emissions.cycle,
+
             cost: costs.cycle
+
         },
+
 
         bike: {
+
             name: "Bike",
+
             icon: "🏍️",
+
             speed: speeds.bike,
+
             emission: emissions.bike,
+
             cost: costs.bike
+
         },
+
 
         bus: {
+
             name: "Bus",
+
             icon: "🚌",
+
             speed: speeds.bus,
+
             emission: emissions.bus,
+
             cost: costs.bus
+
         },
+
 
         train: {
+
             name: "Train",
+
             icon: "🚆",
+
             speed: speeds.train,
+
             emission: emissions.train,
+
             cost: costs.train
+
         },
 
+
         car: {
+
             name: "Car",
+
             icon: "🚗",
+
             speed: speeds.car,
+
             emission: emissions.car,
+
             cost: costs.car
+
         }
 
     };
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // CALCULATE EACH VEHICLE
-    // --------------------------------------------------------
+    // ========================================================
 
-    Object.keys(vehicles).forEach(vehicle => {
+    Object.keys(vehicles).forEach(
+        vehicle => {
 
-        const data = vehicles[vehicle];
-
-
-        // Travel time
-        const timeMinutes =
-            Math.round(
-                (distance / data.speed) * 60
-            );
+            const data =
+                vehicles[vehicle];
 
 
-        // CO₂
-        const co2 =
-            (distance * data.emission) / 1000;
+            // Travel time
+            const timeMinutes =
+                Math.round(
+                    (distance / data.speed) * 60
+                );
 
 
-        // Cost
-        const cost =
-            distance * data.cost;
+            // CO₂
+            const co2 =
+                (distance * data.emission) / 1000;
 
 
-        // Store calculated values
-        data.time = timeMinutes;
-
-        data.co2 = co2;
-
-        data.totalCost = cost;
+            // Cost
+            const cost =
+                distance * data.cost;
 
 
-        // ----------------------------------------------------
-        // UPDATE HTML
-        // ----------------------------------------------------
-
-        const timeElement =
-            document.getElementById(
-                vehicle + "Time"
-            );
-
-        const co2Element =
-            document.getElementById(
-                vehicle + "CO2"
-            );
-
-        const costElement =
-            document.getElementById(
-                vehicle + "Cost"
-            );
+            // Store values
+            data.time =
+                timeMinutes;
 
 
-        if (timeElement) {
+            data.co2 =
+                co2;
 
-            timeElement.textContent =
-                formatTime(timeMinutes);
+
+            data.totalCost =
+                cost;
+
+
+            // =================================================
+            // UPDATE HTML
+            // =================================================
+
+            const timeElement =
+                document.getElementById(
+                    vehicle + "Time"
+                );
+
+
+            const co2Element =
+                document.getElementById(
+                    vehicle + "CO2"
+                );
+
+
+            const costElement =
+                document.getElementById(
+                    vehicle + "Cost"
+                );
+
+
+            if (timeElement) {
+
+                timeElement.textContent =
+                    formatTime(
+                        timeMinutes
+                    );
+            }
+
+
+            if (co2Element) {
+
+                co2Element.textContent =
+                    co2.toFixed(2) + " kg";
+            }
+
+
+            if (costElement) {
+
+                costElement.textContent =
+                    "₹" +
+                    Math.round(cost);
+            }
+
         }
+    );
 
 
-        if (co2Element) {
-
-            co2Element.textContent =
-                co2.toFixed(2) + " kg";
-        }
-
-
-        if (costElement) {
-
-            costElement.textContent =
-                "₹" + Math.round(cost);
-        }
-
-    });
-
-
-    // --------------------------------------------------------
+    // ========================================================
     // SHOW COMPARISON
-    // --------------------------------------------------------
+    // ========================================================
 
     const comparison =
         document.getElementById(
             "vehicleComparison"
         );
 
+
     if (comparison) {
 
-        comparison.classList.remove("d-none");
+        comparison.classList.remove(
+            "d-none"
+        );
     }
 
 
@@ -510,6 +772,7 @@ function calculateVehicleComparison(distance) {
 
 
     return vehicles;
+
 }
 
 
@@ -520,7 +783,10 @@ function calculateVehicleComparison(distance) {
 function formatTime(minutes) {
 
     const hours =
-        Math.floor(minutes / 60);
+        Math.floor(
+            minutes / 60
+        );
+
 
     const remainingMinutes =
         minutes % 60;
@@ -528,11 +794,17 @@ function formatTime(minutes) {
 
     if (hours > 0) {
 
-        return `${hours} hr ${remainingMinutes} min`;
+        return (
+            `${hours} hr ${remainingMinutes} min`
+        );
+
     }
 
 
-    return `${remainingMinutes} min`;
+    return (
+        `${remainingMinutes} min`
+    );
+
 }
 
 
@@ -540,7 +812,9 @@ function formatTime(minutes) {
 // GREENPATH RECOMMENDATION
 // ============================================================
 
-function updateRecommendation(vehicles) {
+function updateRecommendation(
+    vehicles
+) {
 
     const recommendationText =
         document.getElementById(
@@ -568,42 +842,44 @@ function updateRecommendation(vehicles) {
     }
 
 
-    // --------------------------------------------------------
-    // Convert object to array
-    // --------------------------------------------------------
+    // ========================================================
+    // CONVERT OBJECT TO ARRAY
+    // ========================================================
 
     const vehicleList =
-        Object.values(vehicles);
+        Object.values(
+            vehicles
+        );
 
 
-    // --------------------------------------------------------
-    // Find fastest time
-    // --------------------------------------------------------
+    // ========================================================
+    // FASTEST TIME
+    // ========================================================
 
     const fastestTime =
         Math.min(
             ...vehicleList.map(
-                vehicle => vehicle.time
+                vehicle =>
+                    vehicle.time
             )
         );
 
 
-    /*
-        Remove extremely slow options.
-
-        If a vehicle takes more than 2x
-        the fastest option, it won't be
-        considered practical.
-    */
+    // ========================================================
+    // REMOVE EXTREMELY SLOW OPTIONS
+    // ========================================================
 
     const practicalVehicles =
         vehicleList.filter(
             vehicle =>
-                vehicle.time <= fastestTime * 2
+                vehicle.time <=
+                fastestTime * 2
         );
 
 
-    if (practicalVehicles.length === 0) {
+    if (
+        practicalVehicles.length === 0
+    ) {
 
         recommendationText.textContent =
             "No practical transportation option found.";
@@ -612,104 +888,139 @@ function updateRecommendation(vehicles) {
     }
 
 
-    // --------------------------------------------------------
-    // Find minimum values
-    // --------------------------------------------------------
+    // ========================================================
+    // MINIMUM CO₂
+    // ========================================================
 
     const minCO2 =
         Math.min(
             ...practicalVehicles.map(
-                vehicle => vehicle.co2
+                vehicle =>
+                    vehicle.co2
             )
         );
 
+
+    // ========================================================
+    // MINIMUM COST
+    // ========================================================
 
     const minCost =
         Math.min(
             ...practicalVehicles.map(
-                vehicle => vehicle.totalCost
+                vehicle =>
+                    vehicle.totalCost
             )
         );
 
 
-    // --------------------------------------------------------
-    // Calculate GreenPath score
-    // --------------------------------------------------------
+    // ========================================================
+    // CALCULATE GREENPATH SCORE
+    // ========================================================
 
-    practicalVehicles.forEach(vehicle => {
-
-
-        // -----------------------------------------------
-        // TIME SCORE - 40%
-        // -----------------------------------------------
-
-        const timeScore =
-            (fastestTime / vehicle.time) * 40;
+    practicalVehicles.forEach(
+        vehicle => {
 
 
-        // -----------------------------------------------
-        // CO₂ SCORE - 40%
-        // -----------------------------------------------
+            // ------------------------------------------------
+            // TIME SCORE - 40%
+            // ------------------------------------------------
 
-        let co2Score;
+            const timeScore =
+                (
+                    fastestTime /
+                    vehicle.time
+                ) * 40;
 
-        if (vehicle.co2 === 0) {
 
-            co2Score = 40;
+            // ------------------------------------------------
+            // CO₂ SCORE - 40%
+            // ------------------------------------------------
 
-        } else if (minCO2 === 0) {
+            let co2Score;
 
-            co2Score = 0;
 
-        } else {
+            if (
+                vehicle.co2 === 0
+            ) {
 
-            co2Score =
-                (minCO2 / vehicle.co2) * 40;
+                co2Score = 40;
+
+            } else if (
+                minCO2 === 0
+            ) {
+
+                co2Score = 0;
+
+            } else {
+
+                co2Score =
+                    (
+                        minCO2 /
+                        vehicle.co2
+                    ) * 40;
+
+            }
+
+
+            // ------------------------------------------------
+            // COST SCORE - 20%
+            // ------------------------------------------------
+
+            let costScore;
+
+
+            if (
+                vehicle.totalCost === 0
+            ) {
+
+                costScore = 20;
+
+            } else if (
+                minCost === 0
+            ) {
+
+                costScore = 0;
+
+            } else {
+
+                costScore =
+                    (
+                        minCost /
+                        vehicle.totalCost
+                    ) * 20;
+
+            }
+
+
+            // ------------------------------------------------
+            // TOTAL SCORE
+            // ------------------------------------------------
+
+            vehicle.score =
+                timeScore +
+                co2Score +
+                costScore;
+
         }
+    );
 
 
-        // -----------------------------------------------
-        // COST SCORE - 20%
-        // -----------------------------------------------
-
-        let costScore;
-
-        if (vehicle.totalCost === 0) {
-
-            costScore = 20;
-
-        } else if (minCost === 0) {
-
-            costScore = 0;
-
-        } else {
-
-            costScore =
-                (minCost / vehicle.totalCost) * 20;
-        }
-
-
-        // -----------------------------------------------
-        // TOTAL
-        // -----------------------------------------------
-
-        vehicle.score =
-            timeScore +
-            co2Score +
-            costScore;
-
-    });
-
-
-    // --------------------------------------------------------
-    // Find best vehicle
-    // --------------------------------------------------------
+    // ========================================================
+    // FIND BEST VEHICLE
+    // ========================================================
 
     const bestVehicle =
         practicalVehicles.reduce(
-            (best, vehicle) => {
+            (
+                best,
+                vehicle
+            ) => {
 
-                return vehicle.score > best.score
+                return (
+                    vehicle.score >
+                    best.score
+                )
                     ? vehicle
                     : best;
 
@@ -717,9 +1028,9 @@ function updateRecommendation(vehicles) {
         );
 
 
-    // --------------------------------------------------------
-    // Display recommendation
-    // --------------------------------------------------------
+    // ========================================================
+    // DISPLAY RECOMMENDATION
+    // ========================================================
 
     recommendationText.innerHTML = `
 
@@ -739,9 +1050,9 @@ function updateRecommendation(vehicles) {
     `;
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // CONSOLE DEBUG
-    // --------------------------------------------------------
+    // ========================================================
 
     console.log(
         "Practical vehicles:",
@@ -754,19 +1065,22 @@ function updateRecommendation(vehicles) {
     );
 
 
-    practicalVehicles.forEach(vehicle => {
+    practicalVehicles.forEach(
+        vehicle => {
 
-        console.log(
-            `${vehicle.name}: ${vehicle.score.toFixed(2)}`
-        );
+            console.log(
+                `${vehicle.name}: ${vehicle.score.toFixed(2)}`
+            );
 
-    });
+        }
+    );
 
 
     console.log(
         "Recommended:",
         bestVehicle.name
     );
+
 }
 
 
@@ -774,12 +1088,15 @@ function updateRecommendation(vehicles) {
 // SELECTED VEHICLE DISPLAY
 // ============================================================
 
-function displaySelectedVehicle(vehicle) {
+function displaySelectedVehicle(
+    vehicle
+) {
 
     const vehicleBox =
         document.getElementById(
             "selectedVehicleBox"
         );
+
 
     const vehicleText =
         document.getElementById(
@@ -787,7 +1104,10 @@ function displaySelectedVehicle(vehicle) {
         );
 
 
-    if (!vehicleBox || !vehicleText) {
+    if (
+        !vehicleBox ||
+        !vehicleText
+    ) {
 
         console.error(
             "Selected vehicle elements not found!"
@@ -799,31 +1119,41 @@ function displaySelectedVehicle(vehicle) {
 
     const vehicleNames = {
 
-        walk: "🚶 Walking",
+        walk:
+            "🚶 Walking",
 
-        cycle: "🚴 Bicycle",
+        cycle:
+            "🚴 Bicycle",
 
-        bike: "🏍️ Bike",
+        bike:
+            "🏍️ Bike",
 
-        bus: "🚌 Bus",
+        bus:
+            "🚌 Bus",
 
-        train: "🚆 Train",
+        train:
+            "🚆 Train",
 
-        car: "🚗 Car",
+        car:
+            "🚗 Car",
 
-        all: "🌍 Compare All Vehicles"
+        all:
+            "🌍 Compare All Vehicles"
 
     };
 
 
     const vehicleName =
-        vehicleNames[vehicle] || vehicle;
+        vehicleNames[vehicle] ||
+        vehicle;
 
 
     vehicleText.innerHTML = `
 
         You selected
-        <strong>${vehicleName}</strong>
+        <strong>
+            ${vehicleName}
+        </strong>
         for this journey.
 
     `;
@@ -832,6 +1162,7 @@ function displaySelectedVehicle(vehicle) {
     vehicleBox.classList.remove(
         "d-none"
     );
+
 }
 
 
@@ -849,15 +1180,18 @@ function displaySelectedVehicleDetails(
             "selectedVehicleDetails"
         );
 
+
     const nameElement =
         document.getElementById(
             "selectedVehicleName"
         );
 
+
     const timeElement =
         document.getElementById(
             "selectedVehicleTime"
         );
+
 
     const statsElement =
         document.getElementById(
@@ -880,11 +1214,13 @@ function displaySelectedVehicleDetails(
     }
 
 
-    // --------------------------------------------------------
-    // ALL VEHICLES
-    // --------------------------------------------------------
+    // ========================================================
+    // COMPARE ALL VEHICLES
+    // ========================================================
 
-    if (vehicle === "all") {
+    if (
+        vehicle === "all"
+    ) {
 
         detailsBox.classList.add(
             "d-none"
@@ -894,52 +1230,111 @@ function displaySelectedVehicleDetails(
     }
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // VEHICLE DATA
-    // --------------------------------------------------------
+    // ========================================================
 
     const vehicleData = {
 
         walk: {
-            name: "🚶 Walking",
-            speed: 5,
-            emission: 0,
-            cost: 0
+
+            name:
+                "🚶 Walking",
+
+            speed:
+                5,
+
+            emission:
+                0,
+
+            cost:
+                0
+
         },
+
 
         cycle: {
-            name: "🚴 Bicycle",
-            speed: 15,
-            emission: 0,
-            cost: 0
+
+            name:
+                "🚴 Bicycle",
+
+            speed:
+                15,
+
+            emission:
+                0,
+
+            cost:
+                0
+
         },
+
 
         bike: {
-            name: "🏍️ Bike",
-            speed: 45,
-            emission: 50,
-            cost: 3
+
+            name:
+                "🏍️ Bike",
+
+            speed:
+                45,
+
+            emission:
+                50,
+
+            cost:
+                3
+
         },
+
 
         bus: {
-            name: "🚌 Bus",
-            speed: 40,
-            emission: 80,
-            cost: 2
+
+            name:
+                "🚌 Bus",
+
+            speed:
+                40,
+
+            emission:
+                80,
+
+            cost:
+                2
+
         },
+
 
         train: {
-            name: "🚆 Train",
-            speed: 55,
-            emission: 30,
-            cost: 1.5
+
+            name:
+                "🚆 Train",
+
+            speed:
+                55,
+
+            emission:
+                30,
+
+            cost:
+                1.5
+
         },
 
+
         car: {
-            name: "🚗 Car",
-            speed: 55,
-            emission: 170,
-            cost: 10
+
+            name:
+                "🚗 Car",
+
+            speed:
+                55,
+
+            emission:
+                170,
+
+            cost:
+                10
+
         }
 
     };
@@ -960,34 +1355,43 @@ function displaySelectedVehicleDetails(
     }
 
 
-    // --------------------------------------------------------
-    // CALCULATE
-    // --------------------------------------------------------
+    // ========================================================
+    // CALCULATE SELECTED VEHICLE
+    // ========================================================
 
     const timeMinutes =
         Math.round(
-            (distance / data.speed) * 60
+            (
+                distance /
+                data.speed
+            ) * 60
         );
 
 
     const co2 =
-        (distance * data.emission) / 1000;
+        (
+            distance *
+            data.emission
+        ) / 1000;
 
 
     const cost =
-        distance * data.cost;
+        distance *
+        data.cost;
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // UPDATE UI
-    // --------------------------------------------------------
+    // ========================================================
 
     nameElement.textContent =
         data.name;
 
 
     timeElement.textContent =
-        formatTime(timeMinutes);
+        formatTime(
+            timeMinutes
+        );
 
 
     statsElement.textContent =
@@ -999,17 +1403,25 @@ function displaySelectedVehicleDetails(
     );
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // DEBUG
-    // --------------------------------------------------------
+    // ========================================================
 
     console.log(
         "Selected vehicle details:",
         {
-            vehicle,
-            time: timeMinutes,
-            co2,
-            cost
+            vehicle:
+                vehicle,
+
+            time:
+                timeMinutes,
+
+            co2:
+                co2,
+
+            cost:
+                cost
         }
     );
+
 }
