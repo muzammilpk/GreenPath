@@ -1,37 +1,91 @@
-<div class="container">
+{% load static %}
 
-    <div class="row align-items-center">
+<div class="hero-section">
 
-        <!-- Left Side -->
-        <div class="col-lg-6">
+    <div class="container">
 
-            <span class="hero-badge">
-                🌿 Sustainable Navigation
-            </span>
+        <div class="row align-items-center g-5">
 
-            <h1 class="hero-title mt-3">
-                Travel Green.<br>
-                Travel Smart.
-            </h1>
+            <!-- LEFT SIDE -->
+            <div class="col-lg-6">
 
-            <p class="hero-text">
-                Discover the fastest and most eco-friendly route.
-                Compare carbon emissions, save the environment,
-                and make every journey count.
-            </p>
+                <span class="hero-badge">
+                    🌿 Sustainable Navigation
+                </span>
 
-            <div class="planner-card">
+                <h1 class="hero-title mt-4">
+                    Travel Green.<br>
+                    Travel Smart.
+                </h1>
 
-                {% include "components/planner_form.html" %}
+                <p class="hero-text">
+                    Discover the fastest and most eco-friendly route.
+                    Compare carbon emissions, save the environment,
+                    and make every journey count.
+                </p>
+
+                <!-- START TRIP CARD -->
+                <div class="home-start-card">
+
+                    <div class="start-card-icon">
+                        🌱
+                    </div>
+
+                    <div class="start-card-content">
+
+                        <h3>
+                            Ready to travel greener?
+                        </h3>
+
+                        <p>
+                            Plan your journey, compare transportation
+                            options, and find the most sustainable route.
+                        </p>
+
+                    </div>
+
+                    <a href="/trip/" class="start-trip-btn">
+                        <span>🌱</span>
+                        Start Your Green Journey
+                        <span>→</span>
+                    </a>
+
+                    <div class="trip-features">
+
+                        <span>
+                            🌍 Compare Routes
+                        </span>
+
+                        <span>
+                            🌱 Save CO₂
+                        </span>
+
+                        <span>
+                            💰 Compare Cost
+                        </span>
+
+                    </div>
+
+                </div>
 
             </div>
 
-        </div>
 
-        <!-- Right Side -->
-        <div class="col-lg-6">
+            <!-- RIGHT SIDE -->
+            <div class="col-lg-6`">
 
-            <div id="map"></div>
+                <div class="hero-illustration">
+
+                    <div class="illustration-glow"></div>
+
+                    <img
+                        src="{% static 'images/hero/travel.svg' %}"
+                        alt="GreenPath Sustainable Travel"
+                        class="travel-illustration">
+
+                </div>
+
+            </div>
 
         </div>
 
