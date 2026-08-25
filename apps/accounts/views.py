@@ -66,6 +66,3 @@ def login_view(request):
 @login_required
 def profile_view(request):
     return render(request, "authentication/profile.html")
-
-def profile_view(request):
-    return render(request, "authentication/profile.html")

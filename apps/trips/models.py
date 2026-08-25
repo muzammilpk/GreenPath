@@ -7,9 +7,11 @@ class Trip(models.Model):
     TRANSPORT_CHOICES = [
         ("walk", "Walking"),
         ("cycle", "Bicycle"),
+        ("bike", "Bike"),
         ("bus", "Bus"),
         ("train", "Train"),
         ("car", "Car"),
+        
     ]
 
     user = models.ForeignKey(

@@ -7,65 +7,253 @@
         </h3>
 
         <p class="text-muted mb-4">
-            Compare travel time, carbon emissions, and estimated cost.
+            Compare travel time, carbon emissions, estimated cost,
+            and GreenPath sustainability rating.
         </p>
+
+
+        <!-- Best Choice -->
+        <div id="bestChoiceBox"
+             class="alert alert-success border-0 rounded-4 d-none mb-4">
+
+            <div class="d-flex align-items-start gap-3">
+
+                <div style="font-size: 2rem;">
+                    🏆
+                </div>
+
+                <div>
+
+                    <h5 class="fw-bold mb-1">
+                        GreenPath Best Choice
+                    </h5>
+
+                    <div id="bestChoiceText">
+                        -
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Comparison Table -->
 
         <div class="table-responsive">
 
             <table class="table align-middle">
 
                 <thead>
+
                     <tr>
+
                         <th>Transport</th>
+
+                        <th>Availability</th>
+
                         <th>Time</th>
+
                         <th>CO₂</th>
-                        <th>Estimated Cost</th>
+
+                        <th>Cost</th>
+
+                        <th>GreenPath</th>
+
                     </tr>
+
                 </thead>
+
 
                 <tbody>
 
+
+                    <!-- WALK -->
+
                     <tr id="walkRow">
-                        <td>🚶 Walking</td>
-                        <td id="walkTime">-</td>
-                        <td id="walkCO2">0 kg</td>
-                        <td>₹0</td>
+
+                        <td>
+                            🚶 Walking
+                        </td>
+
+                        <td id="walkAvailability">
+                            -
+                        </td>
+
+                        <td id="walkTime">
+                            -
+                        </td>
+
+                        <td id="walkCO2">
+                            0 kg
+                        </td>
+
+                        <td>
+                            ₹0
+                        </td>
+
+                        <td id="walkScore">
+                            -
+                        </td>
+
                     </tr>
+
+
+                    <!-- BICYCLE -->
 
                     <tr id="cycleRow">
-                        <td>🚴 Bicycle</td>
-                        <td id="cycleTime">-</td>
-                        <td id="cycleCO2">0 kg</td>
-                        <td>₹0</td>
+
+                        <td>
+                            🚴 Bicycle
+                        </td>
+
+                        <td id="cycleAvailability">
+                            -
+                        </td>
+
+                        <td id="cycleTime">
+                            -
+                        </td>
+
+                        <td id="cycleCO2">
+                            0 kg
+                        </td>
+
+                        <td>
+                            ₹0
+                        </td>
+
+                        <td id="cycleScore">
+                            -
+                        </td>
+
                     </tr>
+
+
+                    <!-- BIKE -->
 
                     <tr id="bikeRow">
-                        <td>🏍 Bike</td>
-                        <td id="bikeTime">-</td>
-                        <td id="bikeCO2">-</td>
-                        <td id="bikeCost">-</td>
+
+                        <td>
+                            🏍️ Bike
+                        </td>
+
+                        <td id="bikeAvailability">
+                            -
+                        </td>
+
+                        <td id="bikeTime">
+                            -
+                        </td>
+
+                        <td id="bikeCO2">
+                            -
+                        </td>
+
+                        <td id="bikeCost">
+                            -
+                        </td>
+
+                        <td id="bikeScore">
+                            -
+                        </td>
+
                     </tr>
+
+
+                    <!-- BUS -->
 
                     <tr id="busRow">
-                        <td>🚌 Bus</td>
-                        <td id="busTime">-</td>
-                        <td id="busCO2">-</td>
-                        <td id="busCost">-</td>
+
+                        <td>
+                            🚌 Bus
+                        </td>
+
+                        <td id="busAvailability">
+                            -
+                        </td>
+
+                        <td id="busTime">
+                            -
+                        </td>
+
+                        <td id="busCO2">
+                            -
+                        </td>
+
+                        <td id="busCost">
+                            -
+                        </td>
+
+                        <td id="busScore">
+                            -
+                        </td>
+
                     </tr>
+
+
+                    <!-- TRAIN -->
 
                     <tr id="trainRow">
-                        <td>🚆 Train</td>
-                        <td id="trainTime">-</td>
-                        <td id="trainCO2">-</td>
-                        <td id="trainCost">-</td>
+
+                        <td>
+                            🚆 Train
+                        </td>
+
+                        <td id="trainAvailability">
+                            -
+                        </td>
+
+                        <td id="trainTime">
+                            -
+                        </td>
+
+                        <td id="trainCO2">
+                            -
+                        </td>
+
+                        <td id="trainCost">
+                            -
+                        </td>
+
+                        <td id="trainScore">
+                            -
+                        </td>
+
                     </tr>
 
+
+                    <!-- CAR -->
+
                     <tr id="carRow">
-                        <td>🚗 Car</td>
-                        <td id="carTime">-</td>
-                        <td id="carCO2">-</td>
-                        <td id="carCost">-</td>
+
+                        <td>
+                            🚗 Car
+                        </td>
+
+                        <td id="carAvailability">
+                            -
+                        </td>
+
+                        <td id="carTime">
+                            -
+                        </td>
+
+                        <td id="carCO2">
+                            -
+                        </td>
+
+                        <td id="carCost">
+                            -
+                        </td>
+
+                        <td id="carScore">
+                            -
+                        </td>
+
                     </tr>
+
 
                 </tbody>
 
@@ -73,65 +261,98 @@
 
         </div>
 
+
         <!-- Selected Vehicle Details -->
-<div id="selectedVehicleDetails"
-     class="alert alert-light border mt-4 d-none">
 
-    <h6 class="fw-bold mb-3">
-        🌱 Your Journey
-    </h6>
+        <div id="selectedVehicleDetails"
+             class="alert alert-light border mt-4 d-none">
 
-    <div class="row text-center">
+            <h6 class="fw-bold mb-3">
+                🌱 Your Journey
+            </h6>
 
-        <div class="col-md-4">
-            <small class="text-muted">Vehicle</small>
-            <div id="selectedVehicleName" class="fw-bold">
-                -
+            <div class="row text-center">
+
+                <div class="col-md-4">
+
+                    <small class="text-muted">
+                        Vehicle
+                    </small>
+
+                    <div id="selectedVehicleName"
+                         class="fw-bold">
+                        -
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <small class="text-muted">
+                        Travel Time
+                    </small>
+
+                    <div id="selectedVehicleTime"
+                         class="fw-bold">
+                        -
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <small class="text-muted">
+                        CO₂ / Cost
+                    </small>
+
+                    <div id="selectedVehicleStats"
+                         class="fw-bold">
+                        -
+                    </div>
+
+                </div>
+
             </div>
+
         </div>
 
-        <div class="col-md-4">
-            <small class="text-muted">Travel Time</small>
-            <div id="selectedVehicleTime" class="fw-bold">
-                -
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <small class="text-muted">CO₂ / Cost</small>
-            <div id="selectedVehicleStats" class="fw-bold">
-                -
-            </div>
-        </div>
-
-    </div>
-
-</div>
 
         <!-- Selected Vehicle -->
-<div id="selectedVehicleBox"
-     class="alert alert-primary mt-4 d-none">
 
-    <h6 class="fw-bold mb-1">
-        🚗 Selected Vehicle
-    </h6>
+        <div id="selectedVehicleBox"
+             class="alert alert-primary mt-4 d-none">
 
-    <p id="selectedVehicleText" class="mb-0">
-        No vehicle selected.
-    </p>
+            <h6 class="fw-bold mb-1">
+                🚗 Selected Vehicle
+            </h6>
 
-</div>
-        <div id="recommendationBox" class="alert alert-success mt-4">
+            <p id="selectedVehicleText"
+               class="mb-0">
+                No vehicle selected.
+            </p>
 
-    <h6 class="fw-bold mb-2">
-        🌱 GreenPath Recommendation
-    </h6>
+        </div>
 
-    <p id="recommendationText" class="mb-0">
-        Calculate your route to see our recommendation.
-    </p>
 
-</div>
+        <!-- Recommendation -->
+
+        <div id="recommendationBox"
+             class="alert alert-success mt-4">
+
+            <h6 class="fw-bold mb-2">
+                🌱 GreenPath Recommendation
+            </h6>
+
+            <p id="recommendationText"
+               class="mb-0">
+
+                Calculate your route to see our recommendation.
+
+            </p>
+
+        </div>
 
     </div>
 
