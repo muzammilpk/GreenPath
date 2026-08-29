@@ -3,7 +3,6 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -17,50 +16,54 @@
         rel="stylesheet">
 
     <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+        rel="stylesheet">
 
     <!-- Bootstrap Icons -->
     <link rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 
-    <!-- Your CSS -->
+    <!-- GreenPath CSS -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
-    <!-- Leaflet CSS -->
+    <!-- Leaflet -->
     <link rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
-    <!-- Leaflet Routing Machine CSS -->
+    <!-- Leaflet Routing Machine -->
     <link rel="stylesheet"
-        href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+        href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css">
 
+    {% block extra_css %}
+    {% endblock %}
 </head>
 
 <body>
 
+    <!-- Navbar appears ONCE -->
     {% include 'components/navbar.html' %}
 
+    <!-- Page Content -->
     {% block content %}
     {% endblock %}
 
-    <!-- Bootstrap -->
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Your General JS -->
+    <!-- GreenPath General JS -->
     <script src="{% static 'js/script.js' %}"></script>
 
-    <!-- Leaflet JS -->
+    <!-- Leaflet -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <!-- Leaflet Routing Machine JS -->
+    <!-- Leaflet Routing Machine -->
     <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
 
-    <!-- Your Map -->
+    <!-- GreenPath Map -->
     <script src="{% static 'js/map.js' %}"></script>
 
-    <!-- Search -->
-    <script src="{% static 'js/search.js' %}"></script>
-
+    {% block extra_js %}
+    {% endblock %}
 
 </body>
 

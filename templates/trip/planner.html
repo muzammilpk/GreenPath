@@ -1,77 +1,214 @@
 {% extends "base.html" %}
-{% load static %}
 
-{% block title %}Plan Trip{% endblock %}
+{% block title %}Plan Your Journey - GreenPath{% endblock %}
 
 {% block content %}
 
-<section class="trip-section py-5">
+<section class="py-5" style="background: #f4fff9; min-height: calc(100vh - 70px);">
 
+    <!-- Page Header -->
+    <div class="container text-center mb-5">
+
+        <span class="badge rounded-pill px-3 py-2"
+              style="background:#dff5e9; color:#087f4f;">
+            🌱 Sustainable Navigation
+        </span>
+
+        <h1 class="fw-bold mt-3 mb-2">
+            Plan Your Journey
+        </h1>
+
+        <p class="text-muted fs-5">
+            Compare transportation options and choose the most eco-friendly route.
+        </p>
+
+    </div>
+
+
+    <!-- Planner Card -->
     <div class="container">
 
-        <!-- Planner + Map -->
-        <div class="row align-items-stretch g-4">
+        <div class="card border-0 shadow-sm mx-auto"
+             style="max-width:820px; border-radius:18px;">
 
-            <!-- Planner -->
-            <div class="col-lg-5">
+            <div class="card-body p-4 p-md-5">
 
-                <div class="planner-card h-100">
+                <!-- Form -->
+                <form method="get" action="{% url 'plan_trip' %}">
 
-                    {% include "components/planner_form.html" %}
+                    <!-- Source -->
+                    <div class="mb-4">
 
-                </div>
+                        <label for="source" class="form-label fw-semibold">
+                            📍 Source
+                        </label>
 
-            </div>
+                        <input
+                            type="text"
+                            id="source"
+                            name="source"
+                            class="form-control form-control-lg"
+                            placeholder="Enter starting location"
+                            value="{{ source|default:'Kochi' }}"
+                            autocomplete="off"
+                            required
+                        >
 
-            <!-- Map -->
-            <div class="col-lg-7">
-
-                <div id="map"></div>
-
-            </div>
-
-        </div>
+                    </div>
 
 
-        <!-- Route Summary -->
-        <div class="row mt-4">
+                    <!-- Destination -->
+                    <div class="mb-4">
 
-            <div class="col-12">
+                        <label for="destination" class="form-label fw-semibold">
+                            📍 Destination
+                        </label>
 
-                <div id="routeSummary"
-                     class="card shadow-sm border-0 rounded-4 d-none">
+                        <input
+                            type="text"
+                            id="destination"
+                            name="destination"
+                            class="form-control form-control-lg"
+                            placeholder="Enter destination"
+                            value="{{ destination|default:'Thrissur' }}"
+                            autocomplete="off"
+                            required
+                        >
 
-                    <div class="card-body p-4">
+                    </div>
 
-                        <h4 class="fw-bold mb-4">
-                            📍 Route Summary
-                        </h4>
 
-                        <div class="row text-center">
+                    <!-- Transportation -->
+                    <div class="mb-4">
 
+                        <label class="form-label fw-semibold">
+                            Choose Transportation
+                        </label>
+
+                        <div class="row g-3">
+
+                            <!-- Walking -->
                             <div class="col-md-6">
 
-                                <h6 class="text-muted">
-                                    Distance
-                                </h6>
+                                <label class="border rounded-3 p-3 w-100 d-flex align-items-center"
+                                       style="cursor:pointer;">
 
-                                <h3 id="distanceValue"
-                                    class="fw-bold text-success">
-                                    0 km
-                                </h3>
+                                    <input
+                                        type="radio"
+                                        name="mode"
+                                        value="walking"
+                                        class="form-check-input me-3"
+                                        {% if selected_mode_code == 'walking' %}checked{% endif %}
+                                    >
+
+                                    <span>🚶 Walking</span>
+
+                                </label>
 
                             </div>
 
+
+                            <!-- Bicycle -->
                             <div class="col-md-6">
 
-                                <h6 class="text-muted">
-                                    Estimated Time
-                                </h6>
+                                <label class="border rounded-3 p-3 w-100 d-flex align-items-center"
+                                       style="cursor:pointer;">
 
-                                <h3 id="timeValue"
-                                    class="fw-bold text-primary">
-                                    0 min
-                                </h3>
+                                    <input
+                                        type="radio"
+                                        name="mode"
+                                        value="bicycle"
+                                        class="form-check-input me-3"
+                                        {% if selected_mode_code == 'bicycle' %}checked{% endif %}
+                                    >
+
+                                    <span>🚲 Bicycle</span>
+
+                                </label>
+
+                            </div>
+
+
+                            <!-- Bike -->
+                            <div class="col-md-6">
+
+                                <label class="border rounded-3 p-3 w-100 d-flex align-items-center"
+                                       style="cursor:pointer;">
+
+                                    <input
+                                        type="radio"
+                                        name="mode"
+                                        value="bike"
+                                        class="form-check-input me-3"
+                                        {% if selected_mode_code == 'bike' %}checked{% endif %}
+                                    >
+
+                                    <span>🏍️ Bike</span>
+
+                                </label>
+
+                            </div>
+
+
+                            <!-- Bus -->
+                            <div class="col-md-6">
+
+                                <label class="border rounded-3 p-3 w-100 d-flex align-items-center"
+                                       style="cursor:pointer;">
+
+                                    <input
+                                        type="radio"
+                                        name="mode"
+                                        value="bus"
+                                        class="form-check-input me-3"
+                                        {% if selected_mode_code == 'bus' %}checked{% endif %}
+                                    >
+
+                                    <span>🚌 Bus</span>
+
+                                </label>
+
+                            </div>
+
+
+                            <!-- Train -->
+                            <div class="col-md-6">
+
+                                <label class="border rounded-3 p-3 w-100 d-flex align-items-center"
+                                       style="cursor:pointer;">
+
+                                    <input
+                                        type="radio"
+                                        name="mode"
+                                        value="train"
+                                        class="form-check-input me-3"
+                                        {% if selected_mode_code == 'train' %}checked{% endif %}
+                                    >
+
+                                    <span>🚆 Train</span>
+
+                                </label>
+
+                            </div>
+
+
+                            <!-- Car -->
+                            <div class="col-md-6">
+
+                                <label class="border rounded-3 p-3 w-100 d-flex align-items-center"
+                                       style="cursor:pointer;">
+
+                                    <input
+                                        type="radio"
+                                        name="mode"
+                                        value="car"
+                                        class="form-check-input me-3"
+                                        {% if selected_mode_code == 'car' %}checked{% endif %}
+                                    >
+
+                                    <span>🚗 Car</span>
+
+                                </label>
 
                             </div>
 
@@ -79,15 +216,76 @@
 
                     </div>
 
+
+                    <!-- Compare All -->
+                    <div class="border rounded-3 p-3 mb-4">
+
+                        <label class="d-flex align-items-center"
+                               style="cursor:pointer;">
+
+                            <input
+                                type="radio"
+                                name="mode"
+                                value="all"
+                                class="form-check-input me-3"
+                                {% if selected_mode_code == 'all' %}checked{% endif %}
+                            >
+
+                            <span class="fw-semibold">
+                                🌱 Compare All Vehicles
+                                <span style="color:#12945b;">
+                                    (Recommended)
+                                </span>
+                            </span>
+
+                        </label>
+
+                    </div>
+
+
+                    <!-- Submit -->
+                    <button
+                        type="submit"
+                        class="btn btn-success btn-lg w-100"
+                        style="background:#168b55; border:none;"
+                    >
+                        🌱 Compare Routes
+                    </button>
+
+                </form>
+
+
+                <!-- Result Message -->
+                {% if route_data %}
+
+                <hr class="my-4">
+
+                <div class="alert mb-0"
+                     style="
+                        background:#dcefe7;
+                        border:1px solid #abd8c5;
+                        color:#063c29;
+                        border-radius:8px;
+                     ">
+
+                    <h5 class="fw-bold mb-2">
+                        🌱 Route comparison ready
+                    </h5>
+
+                    <div>
+                        We found transportation options for
+                        <strong>{{ source }}</strong>
+                        to
+                        <strong>{{ destination }}</strong>.
+                    </div>
+
                 </div>
+
+                {% endif %}
 
             </div>
 
         </div>
-
-
-        <!-- Vehicle Comparison -->
-        {% include "components/vehicle_comparison.html" %}
 
     </div>
 
