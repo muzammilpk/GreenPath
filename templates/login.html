@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign In — GreenPath{% endblock %}
+
+{% block content %}
+<div style="max-width: 440px; margin: 3rem auto; background: var(--bg-white); border-radius: var(--radius-card); padding: 2.5rem; box-shadow: var(--shadow-card); border: 1px solid var(--border-light);">
+  
+  <div style="text-align: center; margin-bottom: 2rem;">
+    <div style="font-size: 2.8rem; margin-bottom: 0.5rem;">🌲</div>
+    <h1 style="font-size: 1.8rem; font-weight: 800; color: var(--text-dark);">Welcome Back</h1>
+    <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">Sign in to your GreenPath account to track trip savings</p>
+  </div>
+
+  {% if error %}
+  <div style="background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 0.75rem 1rem; border-radius: var(--radius-input); font-size: 0.88rem; font-weight: 600; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+    <i class="fa-solid fa-circle-exclamation"></i>
+    <span>{{ error }}</span>
+  </div>
+  {% endif %}
+
+  <form method="POST" action="{% url 'login' %}">
+    {% csrf_token %}
+
+    <div class="form-group-custom" style="margin-bottom: 1.25rem;">
+      <label class="form-label-custom" for="username">Username or Email</label>
+      <input type="text" name="username" id="username" class="form-input-white" placeholder="Enter your username or email" required autofocus autocomplete="username">
+    </div>
+
+    <div class="form-group-custom" style="margin-bottom: 1.75rem;">
+      <label class="form-label-custom" for="password">Password</label>
+      <input type="password" name="password" id="password" class="form-input-white" placeholder="Enter your password" required autocomplete="current-password">
+    </div>
+
+    <button type="submit" class="btn-cta-green" style="width: 100%; padding: 0.85rem; font-size: 1rem; cursor: pointer; border-radius: var(--radius-input);">
+      <i class="fa-solid fa-right-to-bracket"></i> Sign In
+    </button>
+  </form>
+
+  <div style="text-align: center; margin-top: 1.75rem; padding-top: 1.25rem; border-top: 1px solid var(--border-light); font-size: 0.9rem; color: var(--text-muted);">
+    Don't have an account? 
+    <a href="{% url 'register' %}" style="color: var(--primary-green-hover); font-weight: 700; text-decoration: none;">Create an account</a>
+  </div>
+
+</div>
+{% endblock %}
