@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+
+{% block title %}Eco Dashboard & Analytics — GreenPath{% endblock %}
+
+{% block content %}
+<div class="dashboard-grid">
+  
+  <!-- Hero Greeting Header -->
+  <div class="planner-card" style="background: linear-gradient(135deg, #ffffff, #e6f7ed); border-color: var(--border-subtle);">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <h1 style="font-size: 1.8rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.25rem;">
+          Hello, {{ profile.name }} 👋
+        </h1>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">
+          Here is your personal Carbon Intelligence & Sustainability Summary.
+        </p>
+      </div>
+
+      <div style="display: flex; gap: 1rem; align-items: center;">
+        <button onclick="clearHistory()" class="btn-login" style="color: #ef4444; border-color: #fca5a5;">
+          <i class="fa-solid fa-rotate-left"></i> Reset Stats
+        </button>
+        <a href="{% url 'plan_trip' %}" class="btn-register" style="display: inline-flex; align-items: center; gap: 0.4rem;">
+          <i class="fa-solid fa-plus"></i> Plan New Journey
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Metrics Row (5 Cards) -->
+  <div class="stats-hero-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem;">
+    
+    <!-- Eco Score -->
+    <div class="planner-card" style="border-color: var(--primary-green);">
+      <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Eco Score</div>
+      <div style="font-size: 2.2rem; font-weight: 800; color: var(--primary-green-dark);">
+        {{ profile.eco_score }}<span style="font-size: 1rem; color: var(--text-muted);">/100</span>
+      </div>
+      <div style="font-size: 0.8rem; color: var(--primary-green-text); font-weight: 600;">
+        Top 5% Eco Traveler 🌱
+      </div>
+    </div>
+
+    <!-- Today's Saving -->
+    <div class="planner-card">
+      <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Today's Saving</div>
+      <div style="font-size: 2.2rem; font-weight: 800; color: var(--text-main);">
+        {{ profile.today_co2_saved_kg }} <span style="font-size: 1rem; color: var(--text-muted);">kg CO₂</span>
+      </div>
+      <div style="font-size: 0.8rem; color: var(--text-muted);">
+        Daily footprint offset
+      </div>
+    </div>
+
+    <!-- Total CO2 Saved -->
+    <div class="planner-card">
+      <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Total CO₂ Saved</div>
+      <div style="font-size: 2.2rem; font-weight: 800; color: var(--primary-green-dark);">
+        {{ profile.total_co2_saved_kg }} <span style="font-size: 1rem; color: var(--text-muted);">kg</span>
+      </div>
+      <div style="font-size: 0.8rem; color: var(--text-muted);">
+        ~{{ profile.total_trips|add:"4" }} Trees Planted 🌳
+      </div>
+    </div>
+
+    <!-- Money Saved -->
+    <div class="planner-card">
+      <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Money Saved</div>
+      <div style="font-size: 2.2rem; font-weight: 800; color: #d97706;">
+        ₹{{ profile.total_money_saved_inr|floatformat:0 }}
+      </div>
+      <div style="font-size: 0.8rem; color: var(--text-muted);">
+        Fuel & fare savings
+      </div>
+    </div>
+
+    <!-- Favorite Transport -->
+    <div class="planner-card">
+      <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Top Mode</div>
+      <div style="font-size: 1.8rem; font-weight: 800; color: var(--text-main);">
+        {% if favorite_transport == 'Train' %}🚆{% elif favorite_transport == 'Bus' %}🚌{% elif favorite_transport == 'Bike' %}🏍️{% else %}🚗{% endif %} {{ favorite_transport }}
+      </div>
+
+      <div style="font-size: 0.8rem; color: var(--text-muted);">
+        {{ profile.total_trips }} Total Trips Taken
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Charts Row -->
+  <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
+    
+    <!-- CO2 Savings Trend Bar Chart -->
+    <div class="planner-card">
+      <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+        <i class="fa-solid fa-chart-column" style="color: var(--primary-green-dark);"></i> Weekly Carbon Savings Trend
+      </h3>
+      <div style="height: 260px;">
+        <canvas id="savingsChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Transport Mode Distribution Doughnut Chart -->
+    <div class="planner-card">
+      <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+        <i class="fa-solid fa-chart-pie" style="color: #3b82f6;"></i> Mode Preference
+      </h3>
+      <div style="height: 260px; display: flex; align-items: center; justify-content: center;">
+        <canvas id="modeChart"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Recent Trips Table -->
+  <div class="planner-card" style="margin-top: 1.5rem;">
+    <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+      <i class="fa-solid fa-clock-rotate-left" style="color: #d97706;"></i> Recent Trip History
+    </h3>
+
+    {% if trips %}
+    <div style="overflow-x: auto;">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>Route</th>
+            <th>Mode</th>
+            <th>Distance</th>
+            <th>CO₂ Saved</th>
+            <th>Money Saved</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in trips %}
+          <tr>
+            <td style="font-weight: 700;">{{ t.source_name }} → {{ t.destination_name }}</td>
+            <td>
+              <span style="font-size: 1.1rem; margin-right: 4px;">
+                {% if t.selected_mode == 'Train' %}🚆{% elif t.selected_mode == 'Bus' %}🚌{% elif t.selected_mode == 'Bike' %}🏍️{% else %}🚗{% endif %}
+              </span>
+              {{ t.selected_mode }}
+            </td>
+
+            <td style="color: var(--text-muted);">{{ t.distance_km }} km</td>
+            <td style="color: var(--primary-green-dark); font-weight: 700;">+{{ t.co2_saved_g }} g</td>
+            <td style="color: #d97706; font-weight: 700;">₹{{ t.money_saved_inr|floatformat:0 }}</td>
+            <td style="color: var(--text-muted); font-size: 0.85rem;">{{ t.created_at|date:"M d, H:i" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+      No custom trips logged yet. Take your first trip from the Journey Planner!
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Bar Chart: Weekly Savings
+  const ctxBar = document.getElementById('savingsChart').getContext('2d');
+  new Chart(ctxBar, {
+    type: 'bar',
+    data: {
+      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      datasets: [{
+        label: 'CO₂ Saved (g)',
+        data: [1200, 1450, 980, 1800, 1380, 2100, 1600],
+        backgroundColor: '#10b981',
+        borderRadius: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: '#6b7280' } },
+        y: { grid: { color: '#f3f4f6' }, ticks: { color: '#6b7280' } }
+      }
+    }
+  });
+
+  // Doughnut Chart: Mode Distribution
+  const ctxPie = document.getElementById('modeChart').getContext('2d');
+  const modeData = JSON.parse('{{ mode_counts_json|escapejs }}');
+  const labels = Object.keys(modeData).length > 0 ? Object.keys(modeData) : ['Train', 'Bus', 'Bike', 'Car'];
+  const counts = Object.values(modeData).length > 0 ? Object.values(modeData) : [28, 12, 5, 3];
+
+
+  new Chart(ctxPie, {
+    type: 'doughnut',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: counts,
+        backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { color: '#374151', padding: 12 } }
+      }
+    }
+  });
+
+  function clearHistory() {
+    if (confirm("Are you sure you want to reset your trip history and stats?")) {
+      fetch("{% url 'api_clear_history' %}", { method: "POST" })
+        .then(res => res.json())
+        .then(() => window.location.reload());
+    }
+  }
+</script>
+{% endblock %}
