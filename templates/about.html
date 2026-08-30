@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}About — GreenPath{% endblock %}
+
+{% block content %}
+<div class="planner-card" style="max-width: 900px; margin: 0 auto 2rem; padding: 2.5rem;">
+  <h2 class="planner-title" style="text-align: left; margin-bottom: 0.5rem;">
+    🌲 About GreenPath
+  </h2>
+  <p style="color: var(--text-muted); font-size: 1.05rem; margin-bottom: 2rem;">
+    GreenPath is Google Maps for Sustainable Travel — integrating multi-modal route finding with real-time carbon intelligence, transit detection, and personal carbon offset tracking.
+  </p>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+    <div style="background: var(--bg-main); padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--border-light);">
+      <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--primary-green-dark); margin-bottom: 0.5rem;">🎯 Our Mission</h3>
+      <p style="font-size: 0.9rem; color: var(--text-body);">
+        Empower travelers to reduce urban greenhouse emissions by comparing travel time, cost, distance, and CO₂ output across all practical transport modes.
+      </p>
+    </div>
+
+    <div style="background: var(--bg-main); padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--border-light);">
+      <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--primary-green-dark); margin-bottom: 0.5rem;">⚙️ Technology Stack</h3>
+      <p style="font-size: 0.9rem; color: var(--text-body);">
+        Built with Django, PostgreSQL, OpenStreetMap Nominatim, OSRM Routing Engine, Leaflet.js, and Web Speech Navigation Synthesis.
+      </p>
+    </div>
+  </div>
+
+  <div class="cta-banner-card" style="margin-bottom: 0;">
+    <h3 class="cta-banner-title">Start Traveling Greener Today</h3>
+    <p class="cta-banner-sub">Make every journey count for the environment.</p>
+    <a href="{% url 'plan_trip' %}" class="btn-white-pill">
+      🌱 Plan A Journey Now
+    </a>
+  </div>
+</div>
+{% endblock %}
