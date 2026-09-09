@@ -1,0 +1,342 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}GreenPath — Travel Green. Travel Smart.{% endblock %}
+
+{% block content %}
+
+<!-- =========================================================
+     HERO SECTION
+     ========================================================= -->
+
+<section class="hero-section">
+
+  <!-- Hero Content -->
+  <div class="hero-content">
+
+    <div class="hero-badge">
+      <span>🌱</span>
+      <span>Sustainable Navigation</span>
+    </div>
+
+    <h1 class="hero-title">
+      Travel Green.<br>
+      Travel Smart.
+    </h1>
+
+    <p class="hero-subtitle">
+      Discover the fastest and most eco-friendly route.
+      Compare carbon emissions, save the environment,
+      and make every journey count.
+    </p>
+
+    <!-- Hero Callout Card -->
+    <div class="hero-card">
+
+      <div class="hero-card-intro">
+
+        <span class="hero-card-icon">🌱</span>
+
+        <div>
+          <div class="hero-card-title">
+            Ready to travel greener?
+          </div>
+
+          <div class="hero-card-sub">
+            Plan your journey, compare transportation options,
+            and find the most sustainable route.
+          </div>
+        </div>
+
+      </div>
+
+      <a href="{% url 'plan_trip' %}" class="btn-cta-green">
+        🌱 Start Your Green Journey →
+      </a>
+
+      <div class="hero-card-features">
+        <span>🌍 Compare Routes</span>
+        <span>🌱 Save CO₂</span>
+        <span>💰 Compare Cost</span>
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- Hero Illustration -->
+  <div class="hero-image-wrapper">
+
+    <img
+      src="{% static 'images/hero/travel.svg' %}"
+      alt="GreenPath sustainable travel illustration"
+      class="hero-image"
+    >
+
+  </div>
+
+</section>
+
+
+<!-- =========================================================
+     WHY CHOOSE GREENPATH
+     ========================================================= -->
+
+<section class="home-section features-section">
+
+  <h2 class="section-title-center">
+    Why Choose GreenPath?
+  </h2>
+
+  <p class="section-sub-center">
+    Travel smarter by comparing routes based on carbon emissions,
+    cost, distance, and time.
+  </p>
+
+
+  <div class="feature-cards-grid">
+
+    <!-- Card 1 -->
+    <div class="feature-card">
+
+      <div class="feature-icon-wrapper">
+        🌱
+      </div>
+
+      <h3 class="feature-card-title">
+        Lowest Carbon
+      </h3>
+
+      <p class="feature-card-desc">
+        Compare CO₂ emissions for every transport option
+        before traveling.
+      </p>
+
+    </div>
+
+
+    <!-- Card 2 -->
+    <div class="feature-card">
+
+      <div class="feature-icon-wrapper">
+        🗺️
+      </div>
+
+      <h3 class="feature-card-title">
+        Smart Navigation
+      </h3>
+
+      <p class="feature-card-desc">
+        Real-time navigation with route comparison
+        and live HUD.
+      </p>
+
+    </div>
+
+
+    <!-- Card 3 -->
+    <div class="feature-card">
+
+      <div class="feature-icon-wrapper">
+        📊
+      </div>
+
+      <h3 class="feature-card-title">
+        Track Savings
+      </h3>
+
+      <p class="feature-card-desc">
+        View your carbon savings and money saved
+        after every journey.
+      </p>
+
+    </div>
+
+
+    <!-- Card 4 -->
+    <div class="feature-card">
+
+      <div class="feature-icon-wrapper">
+        🚆
+      </div>
+
+      <h3 class="feature-card-title">
+        Multiple Transport
+      </h3>
+
+      <p class="feature-card-desc">
+        Compare bus, train, bike, and car options instantly.
+      </p>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================================================
+     STATS
+     ========================================================= -->
+
+<section class="stats-banner">
+
+  <div class="stat-item">
+    <div class="stat-number">50K+</div>
+    <div class="stat-label">Trips Planned</div>
+  </div>
+
+  <div class="stat-item">
+    <div class="stat-number">120T</div>
+    <div class="stat-label">CO₂ Saved</div>
+  </div>
+
+  <div class="stat-item">
+    <div class="stat-number">15K+</div>
+    <div class="stat-label">Happy Travelers</div>
+  </div>
+
+  <div class="stat-item">
+    <div class="stat-number">98%</div>
+    <div class="stat-label">Route Accuracy</div>
+  </div>
+
+</section>
+
+
+<!-- =========================================================
+     HOW GREENPATH WORKS
+     ========================================================= -->
+
+<section class="home-section how-it-works-section">
+
+  <h2 class="section-title-center">
+    How GreenPath Works
+  </h2>
+
+  <p class="section-sub-center">
+    Plan your eco-friendly journey in four simple steps.
+  </p>
+
+
+  <div class="steps-grid">
+
+    <!-- Step 1 -->
+    <div class="step-card">
+
+      <div class="step-number-badge">
+        1
+      </div>
+
+      <div class="step-card-icon">
+        <i class="fa-solid fa-location-dot"></i>
+      </div>
+
+      <h3 class="step-card-title">
+        Choose Route
+      </h3>
+
+      <p class="step-card-desc">
+        Select your source and destination locations.
+      </p>
+
+    </div>
+
+
+    <!-- Step 2 -->
+    <div class="step-card">
+
+      <div class="step-number-badge">
+        2
+      </div>
+
+      <div class="step-card-icon">
+        <i class="fa-solid fa-code-compare"></i>
+      </div>
+
+      <h3 class="step-card-title">
+        Compare Options
+      </h3>
+
+      <p class="step-card-desc">
+        Compare travel time, distance, cost,
+        and carbon emissions.
+      </p>
+
+    </div>
+
+
+    <!-- Step 3 -->
+    <div class="step-card">
+
+      <div class="step-number-badge">
+        3
+      </div>
+
+      <div class="step-card-icon">
+        <i class="fa-solid fa-tree"></i>
+      </div>
+
+      <h3 class="step-card-title">
+        Select Eco Route
+      </h3>
+
+      <p class="step-card-desc">
+        Choose the most sustainable journey
+        for your trip.
+      </p>
+
+    </div>
+
+
+    <!-- Step 4 -->
+    <div class="step-card">
+
+      <div class="step-number-badge">
+        4
+      </div>
+
+      <div class="step-card-icon">
+        <i class="fa-solid fa-chart-line"></i>
+      </div>
+
+      <h3 class="step-card-title">
+        Track Savings
+      </h3>
+
+      <p class="step-card-desc">
+        Monitor your cumulative carbon savings
+        over time.
+      </p>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================================================
+     CALL TO ACTION
+     ========================================================= -->
+
+<section class="cta-banner-card">
+
+  <h2 class="cta-banner-title">
+    Ready to Start Your Eco-Friendly Journey?
+  </h2>
+
+  <p class="cta-banner-sub">
+    Compare routes, reduce carbon emissions,
+    and travel smarter with GreenPath.
+  </p>
+
+  <a href="{% url 'plan_trip' %}" class="btn-white-pill">
+    🌱 Plan My First Trip
+  </a>
+
+</section>
+
+{% endblock %}

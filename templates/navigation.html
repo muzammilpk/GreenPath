@@ -1,0 +1,478 @@
+{% extends 'base.html' %}
+
+{% block title %}Google Maps Live Navigation — GreenPath{% endblock %}
+
+{% block extra_css %}
+<style>
+  .gmaps-nav-container {
+    position: relative;
+    width: 100%;
+    height: calc(100vh - 90px);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+  }
+
+  .gmaps-map-view {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Top Turn Instruction Banner (Google Maps Style) */
+  .gmaps-turn-banner {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    right: 15px;
+    max-width: 520px;
+    z-index: 1000;
+    background: #059669;
+    color: #fff;
+    padding: 1.1rem 1.4rem;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .turn-banner-icon {
+    font-size: 2.2rem;
+    background: rgba(255, 255, 255, 0.2);
+    width: 54px;
+    height: 54px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .turn-banner-details {
+    flex: 1;
+  }
+
+  .turn-banner-distance {
+    font-size: 1.4rem;
+    font-weight: 800;
+    line-height: 1.1;
+  }
+
+  .turn-banner-street {
+    font-size: 1rem;
+    font-weight: 500;
+    opacity: 0.95;
+    margin-top: 2px;
+  }
+
+  /* Bottom Left HUD Box */
+  .gmaps-bottom-hud {
+    position: absolute;
+    bottom: 20px;
+    left: 15px;
+    z-index: 1000;
+    width: calc(100% - 30px);
+    max-width: 440px;
+    background: rgba(11, 19, 43, 0.92);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
+    padding: 1.25rem;
+    border-radius: 20px;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* Top Right Floating Control Buttons */
+  .gmaps-floating-controls {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .gmaps-fab {
+    width: 48px;
+    height: 48px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    transition: all 0.2s ease;
+  }
+
+  .gmaps-fab:hover {
+    background: var(--accent-green);
+    color: #fff;
+    transform: scale(1.05);
+  }
+
+  .gmaps-fab.active {
+    background: var(--accent-green);
+    color: #fff;
+  }
+
+  .gps-status-pill {
+    position: absolute;
+    top: 90px;
+    left: 15px;
+    z-index: 1000;
+    background: rgba(11, 19, 43, 0.85);
+    border: 1px solid var(--accent-green);
+    color: var(--accent-light-green);
+    padding: 0.35rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="gmaps-nav-container">
+  
+  <!-- Map Viewport -->
+  <div id="navMap" class="gmaps-map-view"></div>
+
+  <!-- Top Turn Instruction Banner -->
+  <div class="gmaps-turn-banner" id="turnBanner">
+    <div class="turn-banner-icon" id="bannerIcon">
+      <i class="fa-solid {% if selected_mode.code == 'train' %}fa-train{% else %}fa-arrow-up{% endif %}"></i>
+    </div>
+    <div class="turn-banner-details">
+      <div class="turn-banner-distance" id="bannerDistance">Ready</div>
+      <div class="turn-banner-street" id="bannerStreet">
+        {% if selected_mode.code == 'train' and route_data.train_path_data %}
+        Board Train at {{ route_data.train_path_data.origin_station.name }}
+        {% else %}
+        Head towards {{ display_destination }} via {{ selected_mode.name }}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- GPS Active Pill -->
+  <div class="gps-status-pill" id="gpsStatusPill">
+    <i class="fa-solid fa-location-crosshairs" style="color: var(--accent-green);"></i>
+    <span id="gpsStatusText">GPS Connected — Navigation Ready</span>
+  </div>
+
+  <!-- Top Right Floating Tools -->
+  <div class="gmaps-floating-controls">
+    <button class="gmaps-fab active" id="voiceToggleBtn" onclick="toggleVoice()" title="Voice Navigation Prompts">
+      <i class="fa-solid fa-volume-high" id="voiceIcon"></i>
+    </button>
+    <button class="gmaps-fab" onclick="fitFullRoute()" title="View Full Route">
+      <i class="fa-solid fa-route"></i>
+    </button>
+    <button class="gmaps-fab" onclick="recenterMap()" title="Re-center on Vehicle">
+      <i class="fa-solid fa-crosshairs"></i>
+    </button>
+    <button class="gmaps-fab" id="demoPlayBtn" onclick="toggleDemoMotion()" title="Preview Route Motion">
+      <i class="fa-solid fa-play" id="demoPlayIcon"></i>
+    </button>
+  </div>
+
+  <!-- Bottom Google Maps HUD Drawer -->
+  <div class="gmaps-bottom-hud">
+    
+    <!-- Primary Stats Row -->
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Est. Arrival</div>
+        <div style="font-size: 1.3rem; font-weight: 800; color: var(--accent-light-green);" id="etaDisplay">
+          {{ selected_mode.time_str }} <span style="font-size: 0.9rem; color: #fff;">({{ selected_mode.icon }} {{ selected_mode.name }})</span>
+        </div>
+      </div>
+
+      <div style="text-align: center;">
+        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Speed</div>
+        <div style="font-size: 1.3rem; font-weight: 800; color: #fff;" id="speedDisplay">0 km/h</div>
+      </div>
+
+      <div style="text-align: right;">
+        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Distance Left</div>
+        <div style="font-size: 1.3rem; font-weight: 800; color: #fff;" id="distDisplay">{{ selected_mode.distance_km }} km</div>
+      </div>
+    </div>
+
+    <!-- Live Carbon Emissions Gauge -->
+    <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.85rem; border-radius: 14px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+        <span style="font-size: 0.85rem; font-weight: 600; color: var(--accent-light-green);">
+          <i class="fa-solid fa-leaf"></i> Carbon Intelligence
+        </span>
+        <span style="font-size: 0.85rem; font-weight: 700; color: var(--accent-gold);" id="carbonProducedText">
+          0 g CO₂ Produced
+        </span>
+      </div>
+      
+      <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;">
+        <div id="carbonProgressBar" style="width: 5%; height: 100%; background: linear-gradient(90deg, #10b981, #f59e0b); transition: width 0.3s;"></div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem;">
+        <span>CO₂ Saving: <strong style="color: var(--accent-light-green);">{{ co2_saved_g }} g</strong></span>
+        <span>Money Saved: <strong style="color: var(--accent-gold);">₹{{ money_saved_inr }}</strong></span>
+      </div>
+    </div>
+
+    <!-- Finish Navigation Button -->
+    <button onclick="completeTrip()" class="btn-search" style="width: 100%; padding: 0.9rem; font-size: 1.05rem; background: linear-gradient(135deg, #10b981, #059669);">
+      <i class="fa-solid fa-flag-checkered"></i> Finish & Log Trip Savings
+    </button>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const isTrainMode = "{{ selected_mode.code }}" === "train";
+  const srcLat = {{ route_data.source.lat|default:"9.9312" }};
+  const srcLng = {{ route_data.source.lng|default:"76.2673" }};
+  const destLat = {{ route_data.destination.lat|default:"10.5276" }};
+  const destLng = {{ route_data.destination.lng|default:"76.2144" }};
+  const totalDistance = {{ selected_mode.distance_km|default:"15.0" }};
+  const totalCarbonG = {{ selected_mode.carbon_g|default:"70" }};
+  const carBaselineG = {{ car_mode.carbon_g|default:"1450" }};
+
+  // Safe JSON deserialization
+  const roadPath = {{ road_path_json|safe }};
+  const turnSteps = {{ turn_steps_json|safe }};
+  const trainPathData = {{ train_path_json|safe }};
+
+  let navPath = roadPath;
+  if (isTrainMode && trainPathData && trainPathData.full_path) {
+    navPath = trainPathData.full_path;
+  }
+
+  // Leaflet Map Setup
+  const map = L.map('navMap', { zoomControl: false }).setView([(srcLat + destLat)/2, (srcLng + destLng)/2], 9);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors',
+    maxZoom: 19
+  }).addTo(map);
+
+  // Vehicle Icon & Pins
+  const vehicleIcon = L.divIcon({
+    html: '<div style="background:#10b981; font-size:22px; width:42px; height:42px; border-radius:50%; border:3px solid #fff; display:flex; align-items:center; justify-content:center; box-shadow:0 0 20px #10b981;">{{ selected_mode.icon }}</div>',
+    className: 'vehicle-pin',
+    iconSize: [42, 42],
+    iconAnchor: [21, 21]
+  });
+
+  const destIcon = L.divIcon({
+    html: '<div style="background:#ef4444; font-size:16px; width:34px; height:34px; border-radius:50%; border:3px solid #fff; display:flex; align-items:center; justify-content:center; box-shadow:0 0 16px #ef4444; color:#fff;">🎯</div>',
+    className: 'dest-pin',
+    iconSize: [34, 34],
+    iconAnchor: [17, 17]
+  });
+
+  const stationIcon = L.divIcon({
+    html: '<div style="background:#3b82f6; font-size:16px; width:32px; height:32px; border-radius:50%; border:2px solid #fff; display:flex; align-items:center; justify-content:center; box-shadow:0 0 10px #3b82f6;">🚉</div>',
+    className: 'station-pin',
+    iconSize: [32, 32],
+    iconAnchor: [16, 16]
+  });
+
+  const vehicleMarker = L.marker(navPath[0] || [srcLat, srcLng], {icon: vehicleIcon}).addTo(map);
+  L.marker([destLat, destLng], {icon: destIcon}).addTo(map).bindPopup("<b>Destination:</b> {{ display_destination }}");
+
+  let mainPolyline;
+  if (isTrainMode && trainPathData && trainPathData.origin_station) {
+    L.marker([trainPathData.origin_station.lat, trainPathData.origin_station.lng], {icon: stationIcon}).addTo(map).bindPopup(`<b>Station:</b> ${trainPathData.origin_station.name}`);
+    L.marker([trainPathData.dest_station.lat, trainPathData.dest_station.lng], {icon: stationIcon}).addTo(map).bindPopup(`<b>Station:</b> ${trainPathData.dest_station.name}`);
+
+    L.polyline(trainPathData.leg1_polyline, {color: '#3b82f6', weight: 5, dashArray: '6, 6'}).addTo(map);
+    mainPolyline = L.polyline(trainPathData.rail_track_polyline, {color: '#10b981', weight: 8, opacity: 0.95}).addTo(map);
+    L.polyline(trainPathData.leg3_polyline, {color: '#06b6d4', weight: 5, dashArray: '6, 6'}).addTo(map);
+
+    map.fitBounds(mainPolyline.getBounds(), {padding: [80, 80]});
+  } else {
+    mainPolyline = L.polyline(navPath, {color: '#059669', weight: 8, opacity: 0.95, lineJoin: 'round'}).addTo(map);
+    map.fitBounds(mainPolyline.getBounds(), {padding: [80, 80]});
+  }
+
+  function fitFullRoute() {
+    if (mainPolyline) {
+      map.fitBounds(mainPolyline.getBounds(), {padding: [80, 80]});
+    }
+  }
+
+  // Voice Navigation Prompts
+  let voiceEnabled = true;
+  let lastSpokenText = "";
+
+  function speakInstruction(text) {
+    if (!voiceEnabled || !('speechSynthesis' in window)) return;
+    if (text === lastSpokenText) return;
+    lastSpokenText = text;
+    
+    window.speechSynthesis.cancel();
+    const msg = new SpeechSynthesisUtterance(text);
+    msg.rate = 1.0;
+    msg.lang = 'en-US';
+    window.speechSynthesis.speak(msg);
+  }
+
+  function toggleVoice() {
+    voiceEnabled = !voiceEnabled;
+    const btn = document.getElementById('voiceToggleBtn');
+    const icon = document.getElementById('voiceIcon');
+    if (voiceEnabled) {
+      btn.classList.add('active');
+      icon.className = 'fa-solid fa-volume-high';
+      speakInstruction("Voice navigation active.");
+    } else {
+      btn.classList.remove('active');
+      icon.className = 'fa-solid fa-volume-xmark';
+      window.speechSynthesis.cancel();
+    }
+  }
+
+  function recenterMap() {
+    const pos = vehicleMarker.getLatLng();
+    map.flyTo(pos, 14, { animate: true, duration: 1.0 });
+  }
+
+  // REAL DEVICE GPS TRACKING
+  let watchId = null;
+  let isDemoActive = false;
+  let demoTimer = null;
+  let demoIdx = 0;
+
+  function initRealGPSNavigation() {
+    speakInstruction("GPS active. Navigation ready.");
+    
+    if ("geolocation" in navigator) {
+      watchId = navigator.geolocation.watchPosition(
+        position => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          const speedKmh = position.coords.speed ? Math.round(position.coords.speed * 3.6) : 0;
+
+          document.getElementById('gpsStatusText').innerText = `GPS Signal Active — Live Location (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+          document.getElementById('speedDisplay').innerText = `${speedKmh} km/h`;
+
+          if (!isDemoActive) {
+            vehicleMarker.setLatLng([lat, lng]);
+            // Do NOT override fitBounds automatically with map.panTo on stationary view!
+          }
+        },
+        error => {
+          document.getElementById('gpsStatusText').innerText = "GPS Connected — Navigation Ready";
+        },
+        { enableHighAccuracy: true, maximumAge: 1000 }
+      );
+    }
+  }
+
+  // Preview Route Motion (Demo Preview Toggle)
+  function toggleDemoMotion() {
+    const btn = document.getElementById('demoPlayBtn');
+    const icon = document.getElementById('demoPlayIcon');
+
+    if (!isDemoActive) {
+      isDemoActive = true;
+      btn.classList.add('active');
+      icon.className = 'fa-solid fa-pause';
+      document.getElementById('gpsStatusText').innerText = "Previewing Route Motion";
+
+      demoTimer = setInterval(() => {
+        demoIdx += Math.max(1, Math.floor(navPath.length / 150));
+        if (demoIdx >= navPath.length - 1) {
+          demoIdx = navPath.length - 1;
+          clearInterval(demoTimer);
+          isDemoActive = false;
+          btn.classList.remove('active');
+          icon.className = 'fa-solid fa-play';
+          completeTrip();
+          return;
+        }
+
+        const currCoord = navPath[demoIdx];
+        const progressRatio = demoIdx / (navPath.length - 1);
+
+        vehicleMarker.setLatLng(currCoord);
+        map.panTo(currCoord);
+
+        document.getElementById('speedDisplay').innerText = `45 km/h`;
+        const distLeft = (totalDistance * (1.0 - progressRatio)).toFixed(1);
+        document.getElementById('distDisplay').innerText = `${distLeft} km`;
+
+        const currentCarbon = Math.round(totalCarbonG * progressRatio);
+        document.getElementById('carbonProducedText').innerText = `${currentCarbon} g CO₂ Produced`;
+        const pctPct = Math.min(100, Math.max(5, Math.round((currentCarbon / carBaselineG) * 100)));
+        document.getElementById('carbonProgressBar').style.width = `${pctPct}%`;
+
+        const stepsList = (isTrainMode && trainPathData && trainPathData.transit_steps) ? trainPathData.transit_steps : turnSteps;
+        if (stepsList && stepsList.length > 0) {
+          const stepIdx = Math.min(stepsList.length - 1, Math.floor(progressRatio * stepsList.length));
+          const st = stepsList[stepIdx];
+          document.getElementById('bannerDistance').innerText = st.sub || "In 200m";
+          document.getElementById('bannerStreet').innerText = st.text;
+          speakInstruction(st.text);
+        }
+
+      }, 800);
+
+    } else {
+      isDemoActive = false;
+      clearInterval(demoTimer);
+      btn.classList.remove('active');
+      icon.className = 'fa-solid fa-play';
+      document.getElementById('gpsStatusText').innerText = "GPS Connected — Navigation Ready";
+    }
+  }
+
+  function completeTrip() {
+    fetch("{% url 'api_complete_trip' %}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        source: "{{ display_source }}",
+        destination: "{{ display_destination }}",
+        selected_mode: "{{ selected_mode.name }}",
+        distance_km: totalDistance,
+        duration_mins: {{ selected_mode.duration_mins|default:"28" }},
+        co2_baseline_g: carBaselineG,
+        co2_produced_g: totalCarbonG,
+        co2_saved_g: {{ co2_saved_g|default:0 }},
+        money_saved_inr: {{ money_saved_inr|default:0 }}
+
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === 'success') {
+        alert(`🎉 Destination Reached!\n\nYou saved ${data.co2_saved_g}g CO₂ (${data.co2_saved_kg} kg) and ₹${data.money_saved_inr} today!\nYour new Eco Score is ${data.new_eco_score}/100.`);
+        window.location.href = "{% url 'dashboard' %}";
+      }
+    })
+    .catch(err => {
+      window.location.href = "{% url 'dashboard' %}";
+    });
+  }
+
+  window.addEventListener('load', initRealGPSNavigation);
+</script>
+{% endblock %}

@@ -1,0 +1,426 @@
+{% extends 'base.html' %}
+
+{% block title %}Plan Your Journey — GreenPath{% endblock %}
+
+{% block content %}
+<!-- Top Planner Grid -->
+<div class="planner-grid">
+  
+  <!-- Left Column: Form Card -->
+  <div class="planner-card">
+    <h2 class="planner-title">Plan Your Journey</h2>
+
+    <form method="GET" action="{% url 'plan_trip' %}" id="journeyForm" autocomplete="off">
+      
+      <!-- Source Input with High-Precision GPS Location Button & Autocomplete -->
+      <div class="form-group-custom">
+        <label class="form-label-custom">
+          <span><span style="color: #ef4444;">📍</span> Source</span>
+          <button type="button" class="btn-geo-location" id="btnCurrentLocation" onclick="detectCurrentLocation()">
+            <span>🎯</span> Use My Location
+          </button>
+        </label>
+        <input type="text" name="source" id="sourceInput" class="form-input-white" value="{{ source|default:'' }}" placeholder="Enter source location or click map" autocomplete="off">
+        <div id="sourceSuggestBox" class="suggest-dropdown"></div>
+
+        <div id="locationNotice" style="display:none; margin-top:0.5rem; font-size:0.82rem; color:#047857; background:#d1fae5; padding:0.45rem 0.65rem; border-radius:6px;"></div>
+      </div>
+
+      <!-- Destination Input with Autocomplete (No Hardcoded Thrissur Default) -->
+      <div class="form-group-custom">
+        <label class="form-label-custom">
+          <span><span style="color: var(--primary-green-hover);">🎯</span> Destination</span>
+        </label>
+        <input type="text" name="destination" id="destInput" class="form-input-blue" value="{{ destination|default:'' }}" placeholder="Enter destination location" autocomplete="off">
+        <div id="destSuggestBox" class="suggest-dropdown"></div>
+      </div>
+
+      <!-- Choose Transportation Radio Grid -->
+      <div style="margin-bottom: 1.25rem;">
+        <label class="form-label-custom" style="margin-bottom: 0.6rem;">Choose Transportation</label>
+        
+        <div class="transport-grid-selector">
+          <label class="transport-radio-option {% if selected_mode_code == 'bus' %}selected{% endif %}">
+            <input type="radio" name="mode" value="bus" {% if selected_mode_code == 'bus' %}checked{% endif %}>
+            <span>🚌</span> Bus
+          </label>
+
+          <label class="transport-radio-option {% if selected_mode_code == 'train' or not selected_mode_code %}selected{% endif %}">
+            <input type="radio" name="mode" value="train" {% if selected_mode_code == 'train' or not selected_mode_code %}checked{% endif %}>
+            <span>🚆</span> Train
+          </label>
+
+          <label class="transport-radio-option {% if selected_mode_code == 'bike' %}selected{% endif %}">
+            <input type="radio" name="mode" value="bike" {% if selected_mode_code == 'bike' %}checked{% endif %}>
+            <span>🏍️</span> Bike
+          </label>
+
+          <label class="transport-radio-option {% if selected_mode_code == 'car' %}selected{% endif %}">
+            <input type="radio" name="mode" value="car" {% if selected_mode_code == 'car' %}checked{% endif %}>
+            <span>🚗</span> Car
+          </label>
+
+          <!-- Compare All Option -->
+          <label class="transport-radio-option full-width">
+            <input type="radio" name="mode" value="all" {% if selected_mode_code == 'all' %}checked{% endif %}>
+            <span>🌏</span> Compare All Vehicles (Recommended)
+          </label>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <button type="submit" class="btn-cta-green" id="btnSubmitSearch" style="width:100%; border:none; padding: 0.9rem; font-size: 1rem; border-radius: var(--radius-input); cursor: pointer;">
+        🌱 Search & Compare Routes
+      </button>
+
+      <button type="button" class="btn-login" style="width:100%; margin-top: 0.65rem; padding: 0.65rem; border-radius: var(--radius-input); display: flex; align-items: center; justify-content: center; gap: 0.4rem; cursor: pointer; color: var(--text-muted);" onclick="clearRouteInputs()">
+        ✏️ Clear Form
+      </button>
+
+    </form>
+  </div>
+
+  <!-- Right Column: Leaflet Map Preview with Click-To-Set Starting Pin feature -->
+  <div class="map-card-container" style="position: relative;">
+    <div id="planMap" style="width: 100%; height: 100%; min-height: 520px;"></div>
+    <div style="position: absolute; bottom: 12px; left: 12px; z-index: 999; background: rgba(255,255,255,0.92); padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; color: #047857; box-shadow: 0 2px 10px rgba(0,0,0,0.15);">
+      💡 Click anywhere on the map to set starting location
+    </div>
+  </div>
+
+</div>
+
+<!-- Lower Section: Compare Transportation Table -->
+<div class="comparison-card">
+  {% if route_data %}
+  <h2 class="comparison-header-title">
+    🚦 Compare Transportation
+  </h2>
+  <p class="comparison-header-sub">
+    Compare travel time, carbon emissions, estimated cost, and GreenPath sustainability rating.
+  </p>
+
+  <!-- Comparison Table -->
+  <div style="overflow-x: auto;">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Transport</th>
+          <th>Availability</th>
+          <th>Time</th>
+          <th>CO₂</th>
+          <th>Cost</th>
+          <th>GreenPath Rating</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for mode in route_data.modes %}
+        <tr>
+          <td style="font-weight: 700;">
+            <span style="font-size: 1.15rem; margin-right: 0.4rem;">{{ mode.icon }}</span> {{ mode.name }}
+          </td>
+          <td>
+            <span class="badge-available">✔ Available</span>
+          </td>
+          <td style="font-weight: 600;">{{ mode.time_str }}</td>
+          <td style="font-weight: 600;">{{ mode.co2_kg_str }}</td>
+          <td style="font-weight: 600;">₹{{ mode.cost_inr }}</td>
+          <td>
+            <span class="rating-badge">{{ mode.rating_score }}</span>
+            <span style="color: #f59e0b; margin-left: 4px;">{{ mode.rating_stars }}</span>
+          </td>
+          <td>
+            <a href="{% url 'navigation' %}?source={{ source|default:'Kochi'|urlencode }}&destination={{ destination|default:'Thrissur'|urlencode }}&mode={{ mode.code }}" class="btn-login" style="padding: 0.35rem 0.75rem; font-size: 0.82rem;">
+              Start Navigation →
+            </a>
+
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Selected Vehicle Banner -->
+  <div class="selected-vehicle-banner">
+    🚙 <strong>Selected Vehicle</strong><br>
+    You selected <strong>🚆 Train</strong> for this journey.
+  </div>
+
+  <!-- GreenPath Recommendation Card -->
+  <div class="recommendation-card">
+    <div class="rec-title">
+      🌱 GreenPath Recommendation
+    </div>
+    <div class="rec-desc">
+      <strong>🚆 Train — 100/100 ⭐⭐⭐⭐⭐</strong>. Excellent choice based on travel time, carbon emissions, estimated cost and practicality.
+    </div>
+    <div class="rec-why">
+      <span><strong>Why?</strong></span>
+      <span>⏱ {{ route_data.best_mode.time_str|default:"1 hr 21 min" }}</span>
+      <span>·</span>
+      <span>🌱 {{ route_data.best_mode.co2_kg_str|default:"2.23 kg CO₂" }}</span>
+      <span>·</span>
+      <span>💰 ₹{{ route_data.best_mode.cost_inr|default:"111" }}</span>
+    </div>
+  </div>
+
+  {% else %}
+  <!-- Plain State Empty Prompt -->
+  <div style="text-align: center; padding: 3rem 1.5rem; background: var(--bg-mint-soft); border-radius: var(--radius-card); border: 1px dashed var(--border-green);">
+    <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">🗺️</div>
+    <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--primary-green-dark); margin-bottom: 0.5rem;">Ready to Plan Your Eco Journey?</h3>
+    <p style="color: var(--text-muted); font-size: 0.95rem; max-width: 520px; margin: 0 auto 1.5rem;">
+      Enter your <strong>Source</strong> and <strong>Destination</strong> above or click anywhere on the map to compare carbon emissions, cost, and travel times across all transport modes.
+    </p>
+    <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+      <span style="background: #fff; padding: 0.45rem 0.9rem; border-radius: 20px; font-size: 0.82rem; font-weight: 600; color: var(--primary-green-dark); box-shadow: 0 2px 6px rgba(0,0,0,0.04);">📍 Click Map for Location Pin</span>
+      <span style="background: #fff; padding: 0.45rem 0.9rem; border-radius: 20px; font-size: 0.82rem; font-weight: 600; color: var(--primary-green-dark); box-shadow: 0 2px 6px rgba(0,0,0,0.04);">🌱 Real-Time CO₂ Intelligence</span>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const hasRouteData = {% if route_data %}true{% else %}false{% endif %};
+  const srcLat = {{ route_data.source.lat|default:"10.0" }};
+  const srcLng = {{ route_data.source.lng|default:"76.3" }};
+  const destLat = {{ route_data.destination.lat|default:"10.5" }};
+  const destLng = {{ route_data.destination.lng|default:"76.2" }};
+  const rawPath = {% if route_data %}{{ route_data.road_path|safe }}{% else %}[]{% endif %};
+
+  // Center map on Kerala region in plain mode, or fit route bounds when route_data exists
+  const map = L.map('planMap').setView([10.15, 76.40], 9);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors',
+    maxZoom: 19
+  }).addTo(map);
+
+  const srcIcon = L.divIcon({
+    html: '<div style="background:#10b981; width:22px; height:22px; border-radius:50%; border:3px solid #fff; box-shadow:0 0 10px rgba(0,0,0,0.3);"></div>',
+    className: 'custom-pin'
+  });
+
+  const destIcon = L.divIcon({
+    html: '<div style="background:#ef4444; width:22px; height:22px; border-radius:50%; border:3px solid #fff; box-shadow:0 0 10px rgba(0,0,0,0.2);"></div>',
+    className: 'custom-pin'
+  });
+
+  let srcMarker = null;
+
+  if (hasRouteData) {
+    srcMarker = L.marker([srcLat, srcLng], {icon: srcIcon}).addTo(map).bindPopup("<b>Source:</b> {{ route_data.source.name }}");
+    L.marker([destLat, destLng], {icon: destIcon}).addTo(map).bindPopup("<b>Destination:</b> {{ route_data.destination.name }}");
+
+    if (rawPath && rawPath.length > 0) {
+      const routePolyline = L.polyline(rawPath, {
+        color: '#10b981',
+        weight: 5,
+        opacity: 0.9
+      }).addTo(map);
+      map.fitBounds(routePolyline.getBounds(), {padding: [50, 50]});
+    }
+  }
+
+  // Form submit loading state listener
+  const journeyForm = document.getElementById('journeyForm');
+  if (journeyForm) {
+    journeyForm.addEventListener('submit', function() {
+      const btn = document.getElementById('btnSubmitSearch');
+      if (btn) {
+        btn.innerHTML = '⌛ Calculating Route...';
+        btn.style.opacity = '0.85';
+      }
+    });
+  }
+
+
+  // Map Click Feature
+  map.on('click', function(e) {
+    const lat = e.latlng.lat;
+    const lng = e.latlng.lng;
+    const input = document.getElementById('sourceInput');
+    const notice = document.getElementById('locationNotice');
+
+    notice.style.display = 'block';
+    notice.innerHTML = '⌛ Fetching clicked location...';
+
+    fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=16&addressdetails=1`)
+      .then(res => res.json())
+      .then(data => {
+        let name = '';
+        if (data && data.address) {
+          const addr = data.address;
+          const local = addr.suburb || addr.neighbourhood || addr.village || addr.town || addr.road || addr.county;
+          const dist = addr.city || addr.state_district;
+          if (local && dist && local.toLowerCase() !== dist.toLowerCase()) {
+            name = `${local}, ${dist}`;
+          } else {
+            name = local || dist || data.display_name.split(',')[0];
+          }
+        } else if (data && data.display_name) {
+          name = data.display_name.split(',').slice(0, 2).join(', ');
+        } else {
+          name = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+        }
+
+        input.value = name;
+        notice.innerHTML = `📍 Source set to: <strong>${name}</strong>. Click 'Calculating Route...' to view updated comparisons!`;
+
+        if (srcMarker) map.removeLayer(srcMarker);
+        srcMarker = L.marker([lat, lng], {icon: srcIcon}).addTo(map).bindPopup(`<b>Source Pin:</b> ${name}`).openPopup();
+      })
+      .catch(() => {
+        input.value = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+        notice.innerHTML = `📍 Source set to coordinates (${lat.toFixed(3)}, ${lng.toFixed(3)})`;
+      });
+  });
+
+  function clearRouteInputs() {
+    document.getElementById('sourceInput').value = '';
+    document.getElementById('destInput').value = '';
+    document.getElementById('locationNotice').style.display = 'none';
+  }
+
+  // Geolocation Detection
+  function detectCurrentLocation() {
+    const btn = document.getElementById('btnCurrentLocation');
+    const input = document.getElementById('sourceInput');
+    const notice = document.getElementById('locationNotice');
+
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    btn.innerHTML = '<span>⌛</span> Pinpointing GPS...';
+    btn.disabled = true;
+
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        const accuracy = position.coords.accuracy;
+
+        fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=18&addressdetails=1`)
+          .then(res => res.json())
+          .then(data => {
+            let placeName = '';
+            if (data && data.address) {
+              const addr = data.address;
+              const localArea = addr.suburb || addr.neighbourhood || addr.village || addr.town || addr.residential || addr.hamlet || addr.road || addr.subdistrict;
+              const district = addr.city || addr.county || addr.state_district;
+              
+              if (localArea && district && localArea.toLowerCase() !== district.toLowerCase()) {
+                placeName = `${localArea}, ${district}`;
+              } else if (localArea) {
+                placeName = localArea;
+              } else if (district) {
+                placeName = district;
+              } else {
+                placeName = data.display_name.split(',')[0];
+              }
+            } else if (data && data.display_name) {
+              placeName = data.display_name.split(',').slice(0, 2).join(', ');
+            } else {
+              placeName = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+            }
+
+            input.value = placeName;
+            btn.innerHTML = '<span>✔</span> Location Found';
+
+            notice.style.display = 'block';
+            if (accuracy > 1000 || placeName.includes('Ernakulam') || placeName.includes('Kochi')) {
+              notice.innerHTML = `ℹ️ Browser network location returned: <strong>${placeName}</strong>. If you are in another town, type your town above or click anywhere on the map!`;
+            } else {
+              notice.innerHTML = `🎯 GPS Pinpointed: <strong>${placeName}</strong>`;
+            }
+
+            map.setView([lat, lng], 13);
+            if (srcMarker) map.removeLayer(srcMarker);
+            srcMarker = L.marker([lat, lng], {icon: srcIcon}).addTo(map).bindPopup(`<b>Your Location:</b> ${placeName}`).openPopup();
+
+            setTimeout(() => {
+              btn.innerHTML = '<span>🎯</span> Use My Location';
+              btn.disabled = false;
+            }, 2500);
+          })
+          .catch(() => {
+            input.value = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+            btn.innerHTML = '<span>🎯</span> Use My Location';
+            btn.disabled = false;
+          });
+      },
+      error => {
+        btn.innerHTML = '<span>🎯</span> Use My Location';
+        btn.disabled = false;
+        alert("GPS location request failed. Click anywhere on the map to set your location!");
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  }
+
+  // Name Suggestions Autocomplete
+  function setupAutocomplete(inputId, suggestBoxId) {
+    const input = document.getElementById(inputId);
+    const box = document.getElementById(suggestBoxId);
+    let debounceTimer;
+
+    function renderItems(items) {
+      if (items.length > 0) {
+        box.innerHTML = items.map(s => `
+          <div class="suggest-item" onclick="selectSuggestion('${inputId}', '${suggestBoxId}', '${(s.name || s).replace(/'/g, "\\'")}')">
+            <span>📍</span>
+            <div>${s.name || s}</div>
+          </div>
+        `).join('');
+        box.style.display = 'block';
+      } else {
+        box.style.display = 'none';
+      }
+    }
+
+    input.addEventListener('input', function() {
+      const q = this.value.trim();
+      clearTimeout(debounceTimer);
+
+      if (q.length < 1) {
+        box.style.display = 'none';
+        return;
+      }
+
+      debounceTimer = setTimeout(() => {
+        fetch(`/api/suggest/?q=${encodeURIComponent(q)}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.suggestions && data.suggestions.length > 0) {
+              renderItems(data.suggestions);
+            } else {
+              box.style.display = 'none';
+            }
+          })
+          .catch(() => { box.style.display = 'none'; });
+      }, 200);
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!input.contains(e.target) && !box.contains(e.target)) {
+        box.style.display = 'none';
+      }
+    });
+  }
+
+  function selectSuggestion(inputId, suggestBoxId, name) {
+    document.getElementById(inputId).value = name;
+    document.getElementById(suggestBoxId).style.display = 'none';
+  }
+
+  setupAutocomplete('sourceInput', 'sourceSuggestBox');
+  setupAutocomplete('destInput', 'destSuggestBox');
+</script>
+{% endblock %}
