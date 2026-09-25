@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}Carbon Reports — GreenPath{% endblock %}
+
+{% block content %}
+<div class="planner-card" style="max-width: 900px; margin: 0 auto 2rem;">
+  <h2 class="planner-title" style="text-align: left; margin-bottom: 0.5rem;">
+    📊 Sustainability & Carbon Impact Reports
+  </h2>
+
+  <p style="color: var(--text-muted); margin-bottom: 2rem;">
+    Detailed analysis of your personal carbon savings, mode efficiency,
+    and environmental offset metrics.
+  </p>
+
+  <div class="feature-cards-grid" style="margin-bottom: 2rem;">
+
+    <div class="feature-card">
+      <div class="feature-icon-wrapper">🌱</div>
+
+      <div class="stat-number">
+        {{ profile.total_co2_saved_kg }} kg
+      </div>
+
+      <div class="stat-label">
+        Total CO₂ Saved
+      </div>
+    </div>
+
+
+    <div class="feature-card">
+      <div class="feature-icon-wrapper">💰</div>
+
+      <div class="stat-number">
+        ₹{{ profile.total_money_saved_inr|floatformat:0 }}
+      </div>
+
+      <div class="stat-label">
+        Money Saved
+      </div>
+    </div>
+
+
+    <div class="feature-card">
+      <div class="feature-icon-wrapper">🚆</div>
+
+      <div class="stat-number">
+        {{ profile.favorite_transport }}
+      </div>
+
+      <div class="stat-label">
+        Top Choice
+      </div>
+    </div>
+
+  </div>
+
+
+  <div style="
+      background: var(--bg-badge-green);
+      border: 1px solid var(--border-subtle);
+      padding: 1.5rem;
+      border-radius: var(--radius-lg);
+      text-align: center;
+      color: var(--primary-green-text);
+  ">
+
+    <h3 style="
+        font-size: 1.2rem;
+        font-weight: 800;
+        margin-bottom: 0.4rem;
+    ">
+      🌳 Environmental Tree Equivalent
+    </h3>
+
+    <p style="font-size: 1rem;">
+      Your total carbon offset of
+      <strong>{{ profile.total_co2_saved_kg }} kg CO₂</strong>
+      is equivalent to planting
+      <strong>~{{ profile.total_trips|add:"4" }} mature trees</strong>!
+    </p>
+
+  </div>
+
+</div>
+{% endblock %}
