@@ -265,10 +265,23 @@
   // Leaflet Map Setup
   const map = L.map('navMap', { zoomControl: false }).setView([(srcLat + destLat)/2, (srcLng + destLng)/2], 9);
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors',
+  const esriStreets = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, USGS, DeLorme, TomTom',
     maxZoom: 19
-  }).addTo(map);
+  });
+
+  const osmStandard = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19,
+    referrerPolicy: 'strict-origin-when-cross-origin'
+  });
+
+  esriStreets.addTo(map);
+
+  L.control.layers({
+    "Street Map (Recommended)": esriStreets,
+    "OpenStreetMap Standard": osmStandard
+  }, null, { position: 'topright' }).addTo(map);
 
   // Vehicle Icon & Pins
   const vehicleIcon = L.divIcon({

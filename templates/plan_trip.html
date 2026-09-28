@@ -196,10 +196,31 @@
   // Center map on Kerala region in plain mode, or fit route bounds when route_data exists
   const map = L.map('planMap').setView([10.15, 76.40], 9);
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors',
+  // Setup tile layers (Esri requires NO API key and works seamlessly in all browsers)
+  const esriStreets = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, USGS, DeLorme, TomTom',
     maxZoom: 19
-  }).addTo(map);
+  });
+
+  const osmStandard = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19,
+    referrerPolicy: 'strict-origin-when-cross-origin'
+  });
+
+  const esriTopo = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles &copy; Esri &mdash; National Geographic, USGS',
+    maxZoom: 19
+  });
+
+  // Default to Esri Streets (free, zero API key, no referrer blocks in Brave)
+  esriStreets.addTo(map);
+
+  L.control.layers({
+    "Street Map (Recommended)": esriStreets,
+    "OpenStreetMap": osmStandard,
+    "Topographic View": esriTopo
+  }, null, { position: 'topright' }).addTo(map);
 
   const srcIcon = L.divIcon({
     html: '<div style="background:#10b981; width:22px; height:22px; border-radius:50%; border:3px solid #fff; box-shadow:0 0 10px rgba(0,0,0,0.3);"></div>',

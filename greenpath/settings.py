@@ -13,7 +13,10 @@ SECRET_KEY = "django-insecure--9__o)bbbtc@355lojk!055&h67p7wl08snio3+4h$1gq6ql*^
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
+
+# Allow cross-origin requests (like OpenStreetMap tiles) to receive the origin as Referer
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
 
 
 INSTALLED_APPS = [
