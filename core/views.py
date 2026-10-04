@@ -50,7 +50,7 @@ def plan_trip(request):
     profile = get_or_create_profile(request)
     source = request.GET.get('source', '').strip()
     destination = request.GET.get('destination', '').strip()
-    selected_mode = request.GET.get('mode', 'train')
+    selected_mode = request.GET.get('mode', 'all').strip()
     
     route_data = None
     if source and destination:
@@ -62,12 +62,20 @@ def plan_trip(request):
     else:
         # Plain initial map view when no route search parameters are provided
         route_data = None
-        
+
+    user_selected_mode = None
+    if route_data and selected_mode and selected_mode != 'all':
+        for m in route_data['modes']:
+            if m['code'] == selected_mode:
+                user_selected_mode = m
+                break
+
     context = {
         'profile': profile,
         'source': source,
         'destination': destination,
         'selected_mode_code': selected_mode,
+        'user_selected_mode': user_selected_mode,
         'route_data': route_data,
         'active_page': 'plan',
     }

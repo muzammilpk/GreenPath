@@ -572,10 +572,12 @@ body {
   background: var(--bg-page);
 }
 
+.transport-radio-option:has(input:checked),
 .transport-radio-option.selected {
   border-color: var(--primary-green);
   background: #ffffff;
   color: var(--text-dark);
+  box-shadow: 0 0 0 1px var(--primary-green);
 }
 
 .transport-radio-option.full-width {

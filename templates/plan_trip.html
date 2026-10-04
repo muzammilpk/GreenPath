@@ -45,8 +45,8 @@
             <span>🚌</span> Bus
           </label>
 
-          <label class="transport-radio-option {% if selected_mode_code == 'train' or not selected_mode_code %}selected{% endif %}">
-            <input type="radio" name="mode" value="train" {% if selected_mode_code == 'train' or not selected_mode_code %}checked{% endif %}>
+          <label class="transport-radio-option {% if selected_mode_code == 'train' %}selected{% endif %}">
+            <input type="radio" name="mode" value="train" {% if selected_mode_code == 'train' %}checked{% endif %}>
             <span>🚆</span> Train
           </label>
 
@@ -61,8 +61,8 @@
           </label>
 
           <!-- Compare All Option -->
-          <label class="transport-radio-option full-width">
-            <input type="radio" name="mode" value="all" {% if selected_mode_code == 'all' %}checked{% endif %}>
+          <label class="transport-radio-option full-width {% if selected_mode_code == 'all' or not selected_mode_code %}selected{% endif %}">
+            <input type="radio" name="mode" value="all" {% if selected_mode_code == 'all' or not selected_mode_code %}checked{% endif %}>
             <span>🌏</span> Compare All Vehicles (Recommended)
           </label>
         </div>
@@ -143,10 +143,30 @@
   </div>
 
   <!-- Selected Vehicle Banner -->
+  {% if user_selected_mode %}
   <div class="selected-vehicle-banner">
-    🚙 <strong>Selected Vehicle</strong><br>
-    You selected <strong>🚆 Train</strong> for this journey.
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+      <div>
+        <span style="font-size: 1.25rem;">{{ user_selected_mode.icon }}</span> <strong>Selected Vehicle</strong><br>
+        You selected <strong>{{ user_selected_mode.icon }} {{ user_selected_mode.name }}</strong> for this journey.
+        <div style="margin-top: 5px; font-size: 0.88rem; color: #374151;">
+          ⏱ <strong>Duration:</strong> {{ user_selected_mode.time_str }} &nbsp;·&nbsp;
+          🌱 <strong>CO₂:</strong> {{ user_selected_mode.co2_kg_str }} &nbsp;·&nbsp;
+          💰 <strong>Cost:</strong> ₹{{ user_selected_mode.cost_inr }} &nbsp;·&nbsp;
+          ⭐ <strong>Rating:</strong> {{ user_selected_mode.rating_score }}
+        </div>
+      </div>
+      <a href="{% url 'navigation' %}?source={{ source|default:'Kochi'|urlencode }}&destination={{ destination|default:'Thrissur'|urlencode }}&mode={{ user_selected_mode.code }}" class="btn-cta-green" style="padding: 0.55rem 1.15rem; font-size: 0.88rem; text-decoration: none; border-radius: var(--radius-input); display: inline-flex; align-items: center; gap: 0.4rem; white-space: nowrap;">
+        Start Navigation with {{ user_selected_mode.name }} →
+      </a>
+    </div>
   </div>
+  {% else %}
+  <div class="selected-vehicle-banner" style="background: #ecfdf5; border-color: #a7f3d0; color: #065f46;">
+    <span style="font-size: 1.25rem;">🌏</span> <strong>All Vehicles Compared</strong><br>
+    Comparing travel time, carbon emissions, and costs across all modes below.
+  </div>
+  {% endif %}
 
   <!-- GreenPath Recommendation Card -->
   <div class="recommendation-card">
@@ -154,7 +174,7 @@
       🌱 GreenPath Recommendation
     </div>
     <div class="rec-desc">
-      <strong>🚆 Train — 100/100 ⭐⭐⭐⭐⭐</strong>. Excellent choice based on travel time, carbon emissions, estimated cost and practicality.
+      <strong>{{ route_data.best_mode.icon }} {{ route_data.best_mode.name }} — {{ route_data.best_mode.rating_score }} {{ route_data.best_mode.rating_stars }}</strong>. Excellent choice based on travel time, carbon emissions, estimated cost and practicality.
     </div>
     <div class="rec-why">
       <span><strong>Why?</strong></span>
@@ -443,5 +463,19 @@
 
   setupAutocomplete('sourceInput', 'sourceSuggestBox');
   setupAutocomplete('destInput', 'destSuggestBox');
+
+  // Handle radio button active card highlight on click
+  const radioLabels = document.querySelectorAll('.transport-radio-option');
+  radioLabels.forEach(label => {
+    const input = label.querySelector('input[type="radio"]');
+    if (input) {
+      input.addEventListener('change', () => {
+        radioLabels.forEach(l => l.classList.remove('selected'));
+        if (input.checked) {
+          label.classList.add('selected');
+        }
+      });
+    }
+  });
 </script>
 {% endblock %}
